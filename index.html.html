@@ -1,0 +1,2719 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>オホーツク四季の詩 × 網走流氷音頭 - 特別支援・感覚統合インタラクティブアート</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Zen Maru Gothic', sans-serif;
+            background-color: #04101e;
+            color: #f0f9ff;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .serif-title {
+            font-family: 'Shippori Mincho', serif;
+        }
+
+        /* Projection Container - 100% pure unobstructed stage */
+        #art-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #04101e;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        #input-video {
+            display: none;
+        }
+
+        /* Ultra-subtle corner dock so children's faces & projection are NEVER blocked */
+        .corner-dock-btn {
+            background: rgba(15, 30, 50, 0.32);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            color: rgba(255, 255, 255, 0.65);
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .corner-dock-btn:hover, .corner-dock-btn:focus {
+            background: rgba(15, 38, 64, 0.85);
+            color: #ffffff;
+            border-color: rgba(186, 230, 253, 0.5);
+            transform: translateY(-2px);
+        }
+        .corner-dock-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Educator Settings Panel Glassmorphism */
+        .settings-sheet {
+            background: rgba(10, 25, 47, 0.92);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(186, 230, 253, 0.25);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75);
+        }
+
+        .stage-card {
+            transition: all 0.25s ease;
+            border: 2px solid transparent;
+        }
+        .stage-card.active {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.18);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
+        }
+
+        /* Hold-to-unlock progress ring for child-lock option */
+        .hold-ring {
+            transition: stroke-dashoffset 0.1s linear;
+        }
+
+        /* Custom Scrollbar for Educator Modal */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.4);
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.7);
+        }
+    </style>
+</head>
+<body>
+
+<div id="art-container">
+    <!-- Hidden Video for MediaPipe Camera -->
+    <video id="input-video" playsinline></video>
+    <!-- Hidden Audio File Input for custom Abashiri Ryuhyo Ondo track -->
+    <input type="file" id="ondo-audio-file" accept="audio/*" class="hidden" />
+    
+    <!-- Main 100% Fullscreen Interactive Projection Canvas -->
+    <canvas id="output-canvas"></canvas>
+
+    <!-- Subtle Stage Announcement Toast (Auto-fades after 2.5s so screen stays 100% clean) -->
+    <div id="stage-toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-20 pointer-events-none opacity-0 transition-opacity duration-700">
+        <div class="bg-slate-900/70 backdrop-blur-md border border-white/20 rounded-full px-6 py-2.5 flex items-center gap-3 shadow-2xl">
+            <span id="toast-icon" class="text-2xl">🦭</span>
+            <div>
+                <div id="toast-title" class="serif-title text-sm md:text-base font-bold text-white tracking-wider">冬の網走：流氷とアザラシの海</div>
+                <div id="toast-desc" class="text-[11px] text-sky-200/90">手を動かすと流氷が漂い、アザラシやオオワシが応えます</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom-Right Minimal Corner Dock (Never blocks children's faces in the center/top of screen) -->
+    <div id="minimal-corner-dock" class="fixed bottom-4 right-4 z-20 flex items-center gap-2">
+        <!-- Quick Choina / Action Trigger for Teacher with iPad or Switch Access -->
+        <button id="quick-action-btn" class="corner-dock-btn rounded-full px-3.5 py-2.5 text-xs font-bold flex items-center gap-1.5 shadow-lg" title="合いの手・花火・アクションを発動（スペースキー / エンターキーでも可）">
+            <span id="quick-action-icon" class="text-base">👏</span>
+            <span id="quick-action-label" class="hidden sm:inline">チョイナ！</span>
+        </button>
+
+        <!-- Quick Abashiri Season / Mode Cycle Button -->
+        <button id="quick-stage-btn" class="corner-dock-btn rounded-full px-3.5 py-2.5 text-xs font-bold flex items-center gap-1.5 shadow-lg" title="網走の四季ステージを切り替え">
+            <span id="quick-stage-icon" class="text-base">🦭</span>
+            <span id="quick-stage-name" class="hidden md:inline">冬：流氷とアザラシ</span>
+        </button>
+
+        <!-- Educator Settings Button -->
+        <button id="open-settings-btn" class="corner-dock-btn rounded-full w-10 h-10 flex items-center justify-center text-sm shadow-lg relative" title="先生・支援者用メニューを開く">
+            <i class="fa-solid fa-sliders"></i>
+        </button>
+    </div>
+
+    <!-- Separated Educator / Therapist Settings & Setup Screen -->
+    <div id="settings-modal" class="fixed inset-0 z-40 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-md overflow-y-auto transition-opacity duration-300">
+        <div class="settings-sheet max-w-4xl w-full rounded-3xl p-5 sm:p-8 my-auto max-h-[92vh] overflow-y-auto text-slate-100">
+            
+            <!-- Modal Header -->
+            <div class="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-sky-200/15">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-400/30 to-amber-400/30 border border-sky-200/30 flex items-center justify-center text-2xl shadow-inner">
+                        🦭
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="bg-amber-400/20 text-amber-200 border border-amber-300/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full">特別支援学校・大型投影仕様</span>
+                            <span class="bg-sky-400/20 text-sky-200 border border-sky-300/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full">網走の四季 × 流氷音頭</span>
+                        </div>
+                        <h1 class="serif-title text-xl sm:text-2xl font-bold text-white mt-1">
+                            オホーツク四季の詩 <span class="text-sm font-normal text-sky-200/80">― 先生・支援者用コントロールパネル ―</span>
+                        </h1>
+                    </div>
+                </div>
+
+                <!-- Big Primary "Return to Play Screen" Button -->
+                <button id="resume-play-btn" class="bg-gradient-to-r from-emerald-400 to-sky-400 hover:from-emerald-300 hover:to-sky-300 text-slate-950 font-black px-6 py-3 rounded-full text-sm sm:text-base flex items-center gap-2 shadow-xl transition transform hover:scale-105 active:scale-95">
+                    <i class="fa-solid fa-play"></i>
+                    <span>あそびの画面（投影）へ</span>
+                </button>
+            </div>
+
+            <!-- Section 1: Abashiri 4 Seasons Stage Selector -->
+            <div class="mt-6">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-sm sm:text-base font-bold text-sky-200 flex items-center gap-2">
+                        <i class="fa-solid fa-compass text-amber-300"></i>
+                        <span>1. 網走の四季・名物ステージを選ぶ</span>
+                    </h2>
+                    <span class="text-xs text-slate-400">画面右下のアイコンからもワンタップで切り替えられます</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <!-- Winter: Drift Ice & Seals -->
+                    <button data-stage="winter" class="stage-card active text-left bg-slate-900/70 hover:bg-slate-800/80 rounded-2xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-3xl">🦭</span>
+                                <span class="text-[11px] font-bold bg-sky-500/20 text-sky-200 px-2.5 py-0.5 rounded-full">冬・代表モード</span>
+                            </div>
+                            <h3 class="font-bold text-white text-sm mb-1">流氷とアザラシ・オオワシ</h3>
+                            <p class="text-xs text-slate-300/80 leading-relaxed">
+                                手の動きでオホーツクの流氷がゆったり漂い、ゴマフアザラシやクリオネ、天然記念物のオオワシが応えます。
+                            </p>
+                        </div>
+                        <div class="mt-3 pt-2 border-t border-white/10 text-[11px] text-amber-200/90 flex items-center gap-1">
+                            <span>👏</span> 両手合わせでアザラシが万歳ダンス
+                        </div>
+                    </button>
+
+                    <!-- Summer: Lake Abashiri Fireworks -->
+                    <button data-stage="summer" class="stage-card text-left bg-slate-900/70 hover:bg-slate-800/80 rounded-2xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-3xl">🎆</span>
+                                <span class="text-[11px] font-bold bg-rose-500/20 text-rose-200 px-2.5 py-0.5 rounded-full">夏・因果関係が明確</span>
+                            </div>
+                            <h3 class="font-bold text-white text-sm mb-1">網走湖の夏まつり大花火</h3>
+                            <p class="text-xs text-slate-300/80 leading-relaxed">
+                                手や体が触れた場所から、網走湖名物の「水中花火」や色鮮やかな打ち上げ花火が夜空と水面に大きく咲きます。
+                            </p>
+                        </div>
+                        <div class="mt-3 pt-2 border-t border-white/10 text-[11px] text-amber-200/90 flex items-center gap-1">
+                            <span>👏</span> 手拍子で特大スターマイン連発！
+                        </div>
+                    </button>
+
+                    <!-- Autumn: Lake Notoro Coral Grass & Abashiri Crabs -->
+                    <button data-stage="autumn" class="stage-card text-left bg-slate-900/70 hover:bg-slate-800/80 rounded-2xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-3xl">🦀</span>
+                                <span class="text-[11px] font-bold bg-orange-500/20 text-orange-200 px-2.5 py-0.5 rounded-full">秋・ユーモア＆生き物</span>
+                            </div>
+                            <h3 class="font-bold text-white text-sm mb-1">能取湖サンゴ草と網走ガニ</h3>
+                            <p class="text-xs text-slate-300/80 leading-relaxed">
+                                真っ赤に染まる能取湖のサンゴ草の絨毯の上を、網走名物の毛ガニ・タラバガニが横歩き！触ると泡を出して踊ります。
+                            </p>
+                        </div>
+                        <div class="mt-3 pt-2 border-t border-white/10 text-[11px] text-amber-200/90 flex items-center gap-1">
+                            <span>👏</span> カニたちが一斉にハサミでチョイナ！
+                        </div>
+                    </button>
+
+                    <!-- Spring: Lake Abashiri Sunflowers & Moss Phlox -->
+                    <button data-stage="spring" class="stage-card text-left bg-slate-900/70 hover:bg-slate-800/80 rounded-2xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-3xl">🌻</span>
+                                <span class="text-[11px] font-bold bg-emerald-500/20 text-emerald-200 px-2.5 py-0.5 rounded-full">春〜初夏・やさしい彩り</span>
+                            </div>
+                            <h3 class="font-bold text-white text-sm mb-1">大曲のひまわりと芝桜</h3>
+                            <p class="text-xs text-slate-300/80 leading-relaxed">
+                                手を動かした軌跡に、大曲湖畔園地の満開のひまわりとピンクの芝桜が次々と咲き誇り、白いチョウが舞い踊ります。
+                            </p>
+                        </div>
+                        <div class="mt-3 pt-2 border-t border-white/10 text-[11px] text-amber-200/90 flex items-center gap-1">
+                            <span>👏</span> 画面いっぱいに花吹雪が広がる！
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Section 2: Abashiri Ryuhyo Ondo Audio & Rhythm Collaboration -->
+            <div class="mt-6 bg-slate-900/65 border border-amber-300/25 rounded-2xl p-4 sm:p-5">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">🏮</span>
+                        <div>
+                            <h2 class="text-sm sm:text-base font-bold text-amber-200">2. 『網走流氷音頭』音楽・お囃子コラボ設定</h2>
+                            <p class="text-xs text-slate-300/80">内蔵のお囃子リズム（和太鼓・篠笛）のほか、お手持ちの『網走流氷音頭』音源ファイル（MP3/WAV等）を読み込んで連動できます。</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button id="modal-toggle-ondo-btn" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-rose-500 text-white shadow-md flex items-center gap-2">
+                            <i class="fa-solid fa-Volume-high"></i>
+                            <span id="modal-ondo-label">流氷音頭お囃子：ON（演奏中）</span>
+                        </button>
+
+                        <button id="modal-upload-audio-btn" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-200 border border-amber-300/30 flex items-center gap-2">
+                            <i class="fa-solid fa-file-audio"></i>
+                            <span id="modal-audio-filename">『網走流氷音頭』音源ファイルを読込...</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Special Needs Education & Accessibility Tuning -->
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Left Column: Body Tracking & Range of Motion -->
+                <div class="bg-slate-900/60 border border-sky-200/15 rounded-2xl p-4 sm:p-5">
+                    <h3 class="text-sm font-bold text-sky-200 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-universal-access text-sky-300"></i>
+                        <span>3. 身体の動き・センサー感度の配慮</span>
+                    </h3>
+
+                    <!-- Sensitivity / Touch Radius for Limited Mobility -->
+                    <div class="mb-4">
+                        <label class="block text-xs text-slate-300 mb-1.5 font-medium">反応エリアの広さ（車椅子や小さな動きへの配慮）</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button data-sens="1" class="sens-btn py-2 px-3 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-transparent">標準 (全身運動)</button>
+                            <button data-sens="1.5" class="sens-btn py-2 px-3 rounded-xl text-xs font-bold bg-sky-500/25 text-white border border-sky-400">広め (推奨)</button>
+                            <button data-sens="2.2" class="sens-btn py-2 px-3 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-transparent">最大 (小さな動きで反応)</button>
+                        </div>
+                    </div>
+
+                    <!-- Body Part Selection (Hands ON by default, Face OFF by default so faces aren't cluttered) -->
+                    <div class="mb-4">
+                        <label class="block text-xs text-slate-300 mb-1.5 font-medium">反応する身体の部位（児童の実態に合わせてON/OFF可能）</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button id="part-hands-btn" class="py-2 px-2.5 rounded-xl text-xs font-bold bg-sky-500/25 text-white border border-sky-400 flex items-center justify-center gap-1">
+                                <span>👋</span> 手・腕: ON
+                            </button>
+                            <button id="part-head-btn" class="py-2 px-2.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-400 border border-transparent flex items-center justify-center gap-1" title="首や頭の動きで操作するお子様の場合はONにします">
+                                <span>🙂</span> 顔・頭: OFF
+                            </button>
+                            <button id="part-feet-btn" class="py-2 px-2.5 rounded-xl text-xs font-bold bg-sky-500/25 text-white border border-sky-400 flex items-center justify-center gap-1">
+                                <span>🦶</span> 足・ステップ: ON
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Camera Reflection Opacity -->
+                    <div class="mb-4">
+                        <label class="block text-xs text-slate-300 mb-1.5 font-medium">カメラ映像（子どもの顔・姿）の映り込み</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button data-blend="0" class="blend-btn py-2 px-3 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-transparent">映さない (純粋アート)</button>
+                            <button data-blend="1" class="blend-btn py-2 px-3 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-transparent">水面のように淡く</button>
+                            <button data-blend="2" class="blend-btn py-2 px-3 rounded-xl text-xs font-bold bg-sky-500/25 text-white border border-sky-400">はっきり映す (推奨)</button>
+                        </div>
+                    </div>
+
+                    <!-- Sensor Mode (Camera vs Direct iPad Touch) -->
+                    <div>
+                        <label class="block text-xs text-slate-300 mb-1.5 font-medium">入力方法（プロジェクター投影 / iPad直接タッチ）</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="mode-camera-btn" class="py-2.5 px-3 rounded-xl text-xs font-bold bg-sky-500/25 text-white border border-sky-400 flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-camera"></i> カメラ全身センサー + タッチ
+                            </button>
+                            <button id="mode-touch-btn" class="py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-transparent flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-hand-pointer"></i> タッチ・マウス操作のみ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Sensory Care (Snoezelen) & Projection Display -->
+                <div class="bg-slate-900/60 border border-sky-200/15 rounded-2xl p-4 sm:p-5 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-sky-200 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-heart text-rose-300"></i>
+                            <span>4. 自発的な動きを引き出す演出・感覚配慮</span>
+                        </h3>
+
+                        <!-- Action-Driven Mode (Wait for movement vs Automatic) -->
+                        <div class="mb-3 flex items-center justify-between bg-slate-800/70 rounded-xl p-3 border border-white/5">
+                            <div>
+                                <div class="text-xs font-bold text-amber-200">動き連動モード（「動くと変化する」を強調）</div>
+                                <div class="text-[11px] text-slate-300/80">じっとしている時は静かに待ち、手を動かした時だけ流氷や花火が反応します</div>
+                            </div>
+                            <button id="action-driven-btn" class="px-3.5 py-2 rounded-lg text-xs font-bold bg-amber-500/30 text-amber-200 border border-amber-400 shrink-0">
+                                ON (推奨)
+                            </button>
+                        </div>
+
+                        <!-- Gentle Sensory Mode Toggle -->
+                        <div class="mb-4 flex items-center justify-between bg-slate-800/70 rounded-xl p-3 border border-white/5">
+                            <div>
+                                <div class="text-xs font-bold text-white">やさしい感覚モード（スヌーズレン配慮）</div>
+                                <div class="text-[11px] text-slate-300/80">花火の破裂音や強いフラッシュを抑え、穏やかな音と光にします</div>
+                            </div>
+                            <button id="gentle-sensory-btn" class="px-3.5 py-2 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 border border-white/10 shrink-0">
+                                OFF (通常)
+                            </button>
+                        </div>
+
+                        <!-- Time of Day / Background Brightness -->
+                        <div class="mb-4">
+                            <label class="block text-xs text-slate-300 mb-1.5 font-medium">背景の空の色（体育館の明るさに合わせて調整）</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button data-theme="day" class="theme-btn py-2 px-3 rounded-xl text-xs font-bold bg-sky-500/25 text-white border border-sky-400">☀️ 陽だまり</button>
+                                <button data-theme="sunset" class="theme-btn py-2 px-3 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-transparent">🌅 茜色の夕凪</button>
+                                <button data-theme="aurora" class="theme-btn py-2 px-3 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-transparent">🌌 オーロラ夜空</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fullscreen & Add Seal/Characters -->
+                    <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-white/10">
+                        <button id="modal-spawn-btn" class="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/30 flex items-center justify-center gap-1.5">
+                            <span>🦭🦀</span> 生き物・お花の数を増やす
+                        </button>
+                        <button id="modal-fullscreen-btn" class="py-2.5 px-4 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-white border border-white/15 flex items-center gap-1.5">
+                            <i class="fa-solid fa-expand"></i> 全画面表示
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Tip for Teachers -->
+            <div class="mt-5 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between text-xs text-slate-400 gap-2">
+                <div>
+                    💡 <strong>先生向けヒント：</strong> 投影プレイ中、キーボードの <strong>[Space]</strong> または <strong>[Enter]</strong> キー（外部スイッチインターフェース対応）を押すことでも、手拍子（チョイナ！／大花火）を発動できます。
+                </div>
+                <div id="sensor-status-badge" class="text-sky-300 font-medium">
+                    状態: 準備完了
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+/**
+ * Accessible Nature & Abashiri Ryuhyo Ondo Sound Engine (Web Audio API)
+ * Supports:
+ * - Crystalline ice chimes, seal coos, crab bubbles, flower harp glissandos, and Lake Abashiri fireworks
+ * - Traditional Japanese Ondo festival rhythm (Taiko, Hyoshigi, Shinobue)
+ * - Custom external MP3/WAV audio loading for "網走流氷音頭"
+ * - Gentle Sensory Mode (Snoezelen) for children with auditory sensitivity
+ */
+class NatureAudio {
+    constructor() {
+        this.ctx = null;
+        this.gentleMode = false; // Softens attacks and high frequencies for sensory-sensitive students
+        this.lastChimeTime = 0;
+        this.lastRippleTime = 0;
+        this.ondoPlaying = false;
+        this.ondoInterval = null;
+        this.beatStep = 0;
+        this.beatPulse = 0;
+
+        this.audioEl = null;
+        this.analyser = null;
+        this.freqData = null;
+        this.usingCustomTrack = false;
+    }
+
+    init() {
+        if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioCtx();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+    }
+
+    loadCustomAudioFile(file) {
+        this.init();
+        if (this.audioEl) {
+            this.audioEl.pause();
+        }
+        const url = URL.createObjectURL(file);
+        this.audioEl = new Audio(url);
+        this.audioEl.loop = true;
+
+        const source = this.ctx.createMediaElementSource(this.audioEl);
+        this.analyser = this.ctx.createAnalyser();
+        this.analyser.fftSize = 256;
+        this.freqData = new Uint8Array(this.analyser.frequencyBinCount);
+
+        source.connect(this.analyser);
+        this.analyser.connect(this.ctx.destination);
+        this.usingCustomTrack = true;
+
+        if (this.ondoPlaying) {
+            if (this.ondoInterval) {
+                clearInterval(this.ondoInterval);
+                this.ondoInterval = null;
+            }
+            this.audioEl.play().catch(() => {});
+        }
+    }
+
+    toggleOndo(forceState) {
+        this.init();
+        this.ondoPlaying = typeof forceState === 'boolean' ? forceState : !this.ondoPlaying;
+
+        if (this.ondoPlaying) {
+            if (this.usingCustomTrack && this.audioEl) {
+                this.audioEl.play().catch(() => {});
+            } else {
+                this.startSynthesizedOndo();
+            }
+        } else {
+            if (this.ondoInterval) {
+                clearInterval(this.ondoInterval);
+                this.ondoInterval = null;
+            }
+            if (this.audioEl) {
+                this.audioEl.pause();
+            }
+            this.beatPulse = 0;
+        }
+        return this.ondoPlaying;
+    }
+
+    startSynthesizedOndo() {
+        if (this.ondoInterval) clearInterval(this.ondoInterval);
+        this.beatStep = 0;
+
+        const minyoScale = [587.33, 659.25, 783.99, 880.0, 987.77, 1174.66, 1318.51];
+        const melodyPattern = [2, 3, 4, 3, 2, 1, 0, -1, 1, 2, 3, 5, 4, 3, 2, -1];
+
+        this.ondoInterval = setInterval(() => {
+            if (!this.ondoPlaying || this.usingCustomTrack) return;
+            const step = this.beatStep % 16;
+            const volScale = this.gentleMode ? 0.5 : 1.0;
+
+            if (step === 0 || step === 2 || step === 4 || step === 8 || step === 11 || step === 12) {
+                this.playTaiko(step === 0 || step === 8 ? 92 : 118, (step === 0 ? 0.22 : 0.15) * volScale);
+                this.beatPulse = 1.0;
+                if (typeof window.onOndoBeat === 'function') {
+                    window.onOndoBeat(step);
+                }
+            }
+
+            if (step === 6 || step === 14) {
+                this.playHyoshigi(0.12 * volScale);
+                this.beatPulse = 0.85;
+                if (typeof window.onOndoBeat === 'function') {
+                    window.onOndoBeat(step);
+                }
+            }
+
+            const noteIdx = melodyPattern[step];
+            if (noteIdx >= 0) {
+                this.playShinobueNote(minyoScale[noteIdx], 0.23, 0.07 * volScale);
+            }
+
+            this.beatStep++;
+        }, 275);
+    }
+
+    updateAudioReactivePulse() {
+        if (this.ondoPlaying && this.usingCustomTrack && this.analyser && this.freqData) {
+            this.analyser.getByteFrequencyData(this.freqData);
+            let lowSum = 0;
+            for (let i = 0; i < 12; i++) {
+                lowSum += this.freqData[i];
+            }
+            const avg = lowSum / (12 * 255);
+            if (avg > 0.46 && this.beatPulse < 0.4) {
+                this.beatPulse = Math.min(1.0, avg * 1.35);
+                if (typeof window.onOndoBeat === 'function') {
+                    window.onOndoBeat(0);
+                }
+            } else {
+                this.beatPulse *= 0.88;
+            }
+        } else {
+            this.beatPulse *= 0.88;
+        }
+    }
+
+    playTaiko(freq = 95, volume = 0.2) {
+        try {
+            this.init();
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq * 1.35, now);
+            osc.frequency.exponentialRampToValueAtTime(freq * 0.55, now + 0.24);
+
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(volume, now + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.3);
+        } catch (e) {}
+    }
+
+    playHyoshigi(volume = 0.16) {
+        try {
+            this.init();
+            const now = this.ctx.currentTime;
+            const osc1 = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc1.type = this.gentleMode ? 'sine' : 'triangle';
+            osc1.frequency.setValueAtTime(this.gentleMode ? 1100 : 1550, now);
+            osc1.frequency.exponentialRampToValueAtTime(780, now + 0.09);
+
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(volume, now + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
+
+            osc1.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc1.start(now);
+            osc1.stop(now + 0.12);
+        } catch (e) {}
+    }
+
+    playShinobueNote(freq, duration = 0.24, maxVol = 0.07) {
+        try {
+            this.init();
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq * 0.99, now);
+            osc.frequency.linearRampToValueAtTime(freq, now + 0.04);
+
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(maxVol, now + 0.045);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + duration + 0.02);
+        } catch (e) {}
+    }
+
+    playIceTouch(sizeRatio = 1) {
+        try {
+            this.init();
+            const now = this.ctx.currentTime;
+            if (now - this.lastChimeTime < 0.08) return;
+            this.lastChimeTime = now;
+
+            const scale = [587.33, 659.25, 783.99, 880.0, 987.77, 1174.66];
+            const baseFreq = scale[Math.floor(Math.random() * scale.length)] * (0.85 + sizeRatio * 0.2);
+            const vol = this.gentleMode ? 0.065 : 0.11;
+
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(baseFreq, now);
+            osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.01, now + 0.75);
+
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(vol, now + 0.03);
+            gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.95);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 1.0);
+        } catch (e) {}
+    }
+
+    playSealHappy(isBaby = false) {
+        try {
+            this.init();
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.type = this.gentleMode ? 'sine' : 'triangle';
+            const startF = isBaby ? 560 : 360;
+            osc.frequency.setValueAtTime(startF, now);
+            osc.frequency.exponentialRampToValueAtTime(startF * 1.32, now + 0.14);
+            osc.frequency.exponentialRampToValueAtTime(startF * 1.1, now + 0.28);
+
+            const vol = this.gentleMode ? 0.09 : 0.15;
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(vol, now + 0.04);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.35);
+        } catch (e) {}
+    }
+
+    // Playful Crab Bubble / Clack sound for Autumn Stage
+    playCrabBubble() {
+        try {
+            this.init();
+            const now = this.ctx.currentTime;
+            if (now - this.lastRippleTime < 0.1) return;
+            this.lastRippleTime = now;
+
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            const f = 320 + Math.random() * 260;
+            osc.frequency.setValueAtTime(f, now);
+            osc.frequency.exponentialRampToValueAtTime(f * 1.85, now + 0.12);
+
+            const vol = this.gentleMode ? 0.07 : 0.13;
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(vol, now + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.16);
+        } catch (e) {}
+    }
+
+    // Lake Abashiri Firework Launch & Sparkle Boom (Softened in Gentle Mode)
+    playFireworkBoom() {
+        try {
+            this.init();
+            const now = this.ctx.currentTime;
+            if (now - this.lastChimeTime < 0.12) return;
+            this.lastChimeTime = now;
+
+            // Warm low thump + sparkling chime chord
+            const thumpFreq = this.gentleMode ? 130 : 88;
+            const thumpVol = this.gentleMode ? 0.09 : 0.22;
+            this.playTaiko(thumpFreq, thumpVol);
+
+            const sparkleNotes = [587.33, 783.99, 987.77, 1174.66, 1567.98];
+            const note = sparkleNotes[Math.floor(Math.random() * sparkleNotes.length)];
+            this.playShinobueNote(note, 0.45, this.gentleMode ? 0.05 : 0.09);
+        } catch (e) {}
+    }
+
+    playWaterSplash() {
+        try {
+            this.init();
+            const now = this.ctx.currentTime;
+            if (now - this.lastRippleTime < 0.2) return;
+            this.lastRippleTime = now;
+
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(240 + Math.random() * 120, now);
+            osc.frequency.exponentialRampToValueAtTime(480 + Math.random() * 150, now + 0.18);
+
+            gain.gain.setValueAtTime(this.gentleMode ? 0.04 : 0.07, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.22);
+        } catch (e) {}
+    }
+}
+
+const natureAudio = new NatureAudio();
+
+const videoElement = document.getElementById('input-video');
+const canvasElement = document.getElementById('output-canvas');
+const ctx = canvasElement.getContext('2d');
+
+const STAGES = {
+    winter: {
+        id: 'winter',
+        icon: '🦭',
+        name: '冬：流氷とアザラシ',
+        title: '冬の網走：流氷とアザラシ・オオワシの海',
+        desc: '手を大きく動かして流氷を画面の外へかき分けたり、ひょっこり顔を出すアザラシにタッチしよう！',
+        actionLabel: 'チョイナ！'
+    },
+    summer: {
+        id: 'summer',
+        icon: '🎆',
+        name: '夏：網走湖の花火大会',
+        title: '夏の網走：あばしりオホーツク夏まつり花火',
+        desc: '光る花火玉に手を伸ばしてタッチすると、夜空に大きな花火が打ち上がります！',
+        actionLabel: '大花火！'
+    },
+    autumn: {
+        id: 'autumn',
+        icon: '🦀',
+        name: '秋：サンゴ草と網走ガニ',
+        title: '秋の網走：能取湖のサンゴ草と網走ガニのダンス',
+        desc: '手を動かすとサンゴ草から毛ガニやタラバガニが飛び出して一緒に踊ります！',
+        actionLabel: 'カニ踊り！'
+    },
+    spring: {
+        id: 'spring',
+        icon: '🌻',
+        name: '春：大曲のひまわりと芝桜',
+        title: '春〜初夏の網走：大曲湖畔園地のひまわりと芝桜',
+        desc: '手を動かした場所にだけ、満開のひまわりと芝桜が次々と咲きます！',
+        actionLabel: '花吹雪！'
+    }
+};
+
+const state = {
+    stage: 'winter',         // 'winter' | 'summer' | 'autumn' | 'spring'
+    cameraReady: false,
+    useSimulation: false,
+    cameraBlendMode: 2,      // Default 2 (Clear mirror) so children can clearly see their own faces and bodies!
+    sensitivityScale: 1.5,   // Generous reach for special needs students
+    trackParts: {
+        hands: true,         // Default ON: Respond to hand/arm movements
+        head: false,         // Default OFF: Do not trigger constantly on the child's face unless enabled
+        feet: true           // Default ON: Respond to stepping/kicking
+    },
+    actionDrivenMode: true,  // Wait for child's movement instead of auto-spawning objects
+    gentleSensory: false,    // Snoezelen gentle sensory mode
+    theme: 'day',            // 'day' | 'sunset' | 'aurora'
+    ondoMode: true,          // Abashiri Ryuhyo Ondo active
+    lastClapTime: 0,
+    lastFireworkSpawnTime: 0,
+    lastMovementTime: 0,
+    effectors: [],
+    prevEffectorMap: {},
+    latestLandmarks: null,
+    pointer: { x: -300, y: -300, vx: 0, vy: 0, active: false },
+
+    // Interactive "Beckoning Targets" (ひょっこりお誘いギミック) that encourage children to reach out
+    beckonTargets: [],
+
+    // Stage 1 (Winter): Drift Ice, Seals, Cliones, Steller's Sea Eagle (オオワシ)
+    floes: [],
+    seals: [],
+    cliones: [],
+    eagle: { x: -200, y: 85, vx: 1.1, wingPhase: 0, active: true },
+
+    // Stage 2 (Summer): Lake Abashiri Fireworks & Floating Firework Orbs
+    fireworkOrbs: [],
+    fireworkSparks: [],
+
+    // Stage 3 (Autumn): Lake Notoro Coral Grass (サンゴ草) & Abashiri Crabs (毛ガニ・タラバガニ)
+    coralPatches: [],
+    crabs: [],
+    bubbles: [],
+
+    // Stage 4 (Spring): Lake Abashiri Sunflowers (ひまわり), Shibazakura (芝桜) & Butterflies
+    flowers: [],
+    butterflies: [],
+
+    // Shared atmospheric effects
+    ripples: [],
+    snowflakes: [],
+    expressions: []
+};
+
+let toastTimeout = null;
+function showStageToast(stageKey) {
+    const info = STAGES[stageKey];
+    if (!info) return;
+    document.getElementById('toast-icon').textContent = info.icon;
+    document.getElementById('toast-title').textContent = info.title;
+    document.getElementById('toast-desc').textContent = info.desc;
+
+    const toast = document.getElementById('stage-toast');
+    toast.classList.remove('opacity-0');
+    toast.classList.add('opacity-100');
+
+    if (toastTimeout) clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0');
+    }, 3000);
+}
+
+// Synced to each beat of Abashiri Ryuhyo Ondo (Subtle rhythm only, doesn't clutter screen when actionDrivenMode is ON)
+window.onOndoBeat = function(step) {
+    if (!state.ondoMode) return;
+
+    if (state.stage === 'winter') {
+        if (!state.actionDrivenMode) {
+            const randomFloe = state.floes[Math.floor(Math.random() * state.floes.length)];
+            if (randomFloe) randomFloe.glow = Math.max(randomFloe.glow, 0.55);
+        }
+        if ((step === 6 || step === 14) && !state.actionDrivenMode) {
+            const randomSeal = state.seals[Math.floor(Math.random() * state.seals.length)];
+            if (randomSeal) {
+                const words = ['チョイナ♪', 'ソレ！', '🌊', '🏮'];
+                addExpression(randomSeal.x, randomSeal.y - 12, words[Math.floor(Math.random() * words.length)]);
+            }
+        }
+    } else if (state.stage === 'summer' && (step === 0 || step === 8) && !state.actionDrivenMode) {
+        const w = canvasElement.width;
+        const h = canvasElement.height;
+        spawnFireworkBurst(w * (0.2 + Math.random() * 0.6), h * (0.2 + Math.random() * 0.35), false);
+    } else if (state.stage === 'autumn' && (step === 6 || step === 14) && !state.actionDrivenMode) {
+        const randomCrab = state.crabs[Math.floor(Math.random() * state.crabs.length)];
+        if (randomCrab) {
+            randomCrab.danceTimer = 35;
+            addExpression(randomCrab.x, randomCrab.y - 18, 'チョイナ🦀');
+        }
+    }
+};
+
+// Triggered by hand clap, double tap, switch button, or spacebar
+function triggerChoinaClap(cx, cy) {
+    const now = performance.now();
+    if (now - state.lastClapTime < 400) return;
+    state.lastClapTime = now;
+    state.lastMovementTime = now;
+
+    natureAudio.playHyoshigi(0.22);
+    natureAudio.playTaiko(105, 0.18);
+
+    addRipple(cx, cy, 190, 'rgba(253, 224, 71, ');
+    addRipple(cx, cy, 120, 'rgba(186, 230, 253, ');
+
+    const kakegoeWords = ['チョイナ！', 'ハァー流氷♪', 'ソレ！', 'あばしり♪'];
+    addExpression(cx, cy - 18, kakegoeWords[Math.floor(Math.random() * kakegoeWords.length)]);
+
+    if (state.stage === 'winter') {
+        state.seals.forEach((seal, idx) => {
+            seal.state = idx % 2 === 0 ? 'happy' : 'rolling';
+            seal.reactionTimer = 95;
+            seal.blush = 1.0;
+            if (Math.random() < 0.7) {
+                addExpression(seal.x, seal.y - 10, idx % 2 === 0 ? '👏' : '🏮');
+            }
+        });
+        // Push nearby drift ice outward toward the edges of the screen!
+        state.floes.forEach((floe) => {
+            const dx = floe.x - cx;
+            const dy = floe.y - cy;
+            const dist = Math.max(40, Math.hypot(dx, dy));
+            if (dist < 480) {
+                const force = ((480 - dist) / 480) * 3.8;
+                floe.vx += (dx / dist) * force;
+                floe.vy += (dy / dist) * force;
+                floe.glow = 0.95;
+                floe.pushedByChild = true;
+            }
+        });
+    } else if (state.stage === 'summer') {
+        // Grand Starmine Fireworks over Lake Abashiri!
+        const w = canvasElement.width;
+        const h = canvasElement.height;
+        spawnFireworkBurst(cx, Math.min(cy, h * 0.65), true);
+        setTimeout(() => spawnFireworkBurst(w * 0.28, h * 0.32, false), 160);
+        setTimeout(() => spawnFireworkBurst(w * 0.72, h * 0.32, false), 320);
+    } else if (state.stage === 'autumn') {
+        // All Abashiri Crabs dance and blow celebratory bubbles!
+        state.crabs.forEach((crab) => {
+            crab.danceTimer = 90;
+            crab.vy = -4.5;
+            for (let b = 0; b < 4; b++) {
+                addBubble(crab.x + (Math.random() - 0.5) * 30, crab.y - 15);
+            }
+        });
+        natureAudio.playCrabBubble();
+    } else if (state.stage === 'spring') {
+        // Bloom a ring of Abashiri sunflowers around the clap point
+        for (let i = 0; i < 6; i++) {
+            const ang = (Math.PI * 2 * i) / 6;
+            spawnFlower(cx + Math.cos(ang) * 85, cy + Math.sin(ang) * 85, true);
+        }
+        natureAudio.playIceTouch(1.2);
+    }
+}
+
+function createIcePolygon(radius, numVertices = 8) {
+    const pts = [];
+    for (let i = 0; i < numVertices; i++) {
+        const baseAngle = (Math.PI * 2 * i) / numVertices;
+        const angleOffset = (Math.random() - 0.5) * (Math.PI / numVertices) * 0.6;
+        const r = radius * (0.78 + Math.random() * 0.26);
+        pts.push({ angle: baseAngle + angleOffset, r });
+    }
+    return pts;
+}
+
+// Helper to spawn a single compact ice floe around the edges/bottom (leaving the center face zone open)
+function createSingleFloe(id, w, h, spawnAtEdge = false) {
+    const radius = 26 + Math.random() * 24; // Compact size (26~50px) so children's faces are never buried!
+    let x, y;
+    if (spawnAtEdge) {
+        // Spawn gently from left, right, or bottom edge
+        const edge = Math.random();
+        if (edge < 0.4) {
+            x = -radius - 10;
+            y = h * (0.52 + Math.random() * 0.42);
+        } else if (edge < 0.8) {
+            x = w + radius + 10;
+            y = h * (0.52 + Math.random() * 0.42);
+        } else {
+            x = w * (0.15 + Math.random() * 0.7);
+            y = h + radius + 10;
+        }
+    } else {
+        // Initial placement: keep center-top face area (x: 25%~75%, y: 15%~60%) completely open!
+        const side = id % 3;
+        if (side === 0) {
+            x = w * (0.06 + Math.random() * 0.2);
+            y = h * (0.35 + Math.random() * 0.55);
+        } else if (side === 1) {
+            x = w * (0.74 + Math.random() * 0.2);
+            y = h * (0.35 + Math.random() * 0.55);
+        } else {
+            x = w * (0.2 + Math.random() * 0.6);
+            y = h * (0.68 + Math.random() * 0.24);
+        }
+    }
+
+    return {
+        id,
+        x,
+        y,
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.15,
+        radius,
+        angle: Math.random() * Math.PI * 2,
+        vAngle: (Math.random() - 0.5) * 0.002,
+        vertices: createIcePolygon(radius, 8),
+        glow: 0,
+        pushedByChild: false,
+        hasLantern: id % 3 === 0
+    };
+}
+
+function initNatureWorld() {
+    const w = canvasElement.width || window.innerWidth;
+    const h = canvasElement.height || window.innerHeight;
+
+    state.floes = [];
+    state.seals = [];
+    state.cliones = [];
+    state.snowflakes = [];
+    state.coralPatches = [];
+    state.crabs = [];
+    state.flowers = [];
+    state.butterflies = [];
+    state.fireworkOrbs = [];
+
+    // 1. Winter: Only 8 compact Drift Ice Floes positioned around the bottom/sides so the child's face is 100% clear!
+    const floeCount = 8;
+    for (let i = 0; i < floeCount; i++) {
+        state.floes.push(createSingleFloe(i + 1, w, h, false));
+    }
+
+    // 4 cute seals resting on slightly wider floes (still compact: ~46px)
+    const sealTypes = ['spotted', 'baby', 'ribbon'];
+    const numSeals = 4;
+    for (let i = 0; i < numSeals; i++) {
+        const hostFloe = state.floes[i];
+        hostFloe.radius = 44;
+        hostFloe.vertices = createIcePolygon(hostFloe.radius, 9);
+
+        state.seals.push({
+            id: i,
+            type: sealTypes[i % sealTypes.length],
+            state: 'peeking', // Starts peeking out curiously to invite the child to reach!
+            floeId: hostFloe.id,
+            x: hostFloe.x,
+            y: hostFloe.y,
+            vx: 0,
+            vy: 0,
+            facing: hostFloe.x < w * 0.5 ? 1 : -1,
+            scale: sealTypes[i % sealTypes.length] === 'baby' ? 0.72 : 0.85,
+            animTimer: Math.random() * 100,
+            reactionTimer: 0,
+            blush: 0,
+            patCooldown: 0
+        });
+    }
+
+    // 5 Cliones (Sea Angels) swimming near the sides/corners to invite hand movements
+    for (let i = 0; i < 5; i++) {
+        state.cliones.push({
+            x: i % 2 === 0 ? w * (0.08 + Math.random() * 0.18) : w * (0.74 + Math.random() * 0.18),
+            y: h * 0.2 + Math.random() * (h * 0.65),
+            vx: (Math.random() - 0.5) * 0.4,
+            vy: -0.15 - Math.random() * 0.25,
+            wingPhase: Math.random() * Math.PI * 2,
+            scale: 0.85 + Math.random() * 0.35,
+            glow: 0
+        });
+    }
+
+    // Gentle Snowflakes (fewer so camera feed stays crisp)
+    for (let i = 0; i < 28; i++) {
+        state.snowflakes.push({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            r: 1.5 + Math.random() * 2.2,
+            vy: 0.3 + Math.random() * 0.55,
+            vx: (Math.random() - 0.5) * 0.25,
+            alpha: 0.25 + Math.random() * 0.45
+        });
+    }
+
+    // 2. Summer: Interactive Floating Firework Orbs (光る花火玉) that invite children to reach & touch!
+    for (let i = 0; i < 4; i++) {
+        spawnFireworkOrb(w, h, i);
+    }
+
+    // 3. Autumn: Lake Notoro Coral Grass (サンゴ草) along the bottom shoreline & 5 Abashiri Crabs
+    const patchCount = 18;
+    for (let i = 0; i < patchCount; i++) {
+        state.coralPatches.push({
+            x: (w * (i + 0.5)) / patchCount + (Math.random() - 0.5) * 35,
+            y: h * 0.72 + Math.random() * (h * 0.24),
+            rx: 42 + Math.random() * 45,
+            ry: 15 + Math.random() * 18,
+            hue: 345 + Math.random() * 18,
+            swayPhase: Math.random() * Math.PI * 2
+        });
+    }
+
+    const crabCount = 5;
+    for (let i = 0; i < crabCount; i++) {
+        state.crabs.push({
+            id: i,
+            type: i % 2 === 0 ? 'kegani' : 'taraba',
+            x: w * 0.14 + (w * 0.72 * i) / (crabCount - 1),
+            y: h * 0.74 + (i % 2) * (h * 0.1),
+            baseY: h * 0.74 + (i % 2) * (h * 0.1),
+            vx: (i % 2 === 0 ? 1 : -1) * (0.45 + Math.random() * 0.35),
+            vy: 0,
+            scale: i % 2 === 0 ? 0.88 : 1.05,
+            legPhase: Math.random() * Math.PI * 2,
+            danceTimer: 0,
+            cooldown: 0
+        });
+    }
+
+    // 4. Spring: Only 4 starter flowers at the bottom corners so the child blooms the rest with their own movement!
+    for (let i = 0; i < 4; i++) {
+        spawnFlower(
+            i < 2 ? w * (0.1 + i * 0.1) : w * (0.8 + (i - 2) * 0.1),
+            h * (0.78 + Math.random() * 0.14),
+            i % 2 === 0
+        );
+    }
+    for (let i = 0; i < 4; i++) {
+        state.butterflies.push({
+            x: i % 2 === 0 ? w * 0.18 : w * 0.82,
+            y: h * (0.28 + (i % 2) * 0.28),
+            vx: (Math.random() - 0.5) * 1.1,
+            vy: (Math.random() - 0.5) * 0.7,
+            wingPhase: Math.random() * Math.PI * 2,
+            color: i % 2 === 0 ? '#fef08a' : '#fbcfe8'
+        });
+    }
+}
+
+// Spawn a glowing Firework Orb (花火玉) in easy-to-reach positions around the child's hands
+function spawnFireworkOrb(w, h, index = 0) {
+    const positions = [
+        { x: w * 0.22, y: h * 0.35 },
+        { x: w * 0.78, y: h * 0.35 },
+        { x: w * 0.20, y: h * 0.62 },
+        { x: w * 0.80, y: h * 0.62 }
+    ];
+    const pos = positions[index % positions.length];
+    const hues = [350, 45, 190, 280, 140];
+    state.fireworkOrbs.push({
+        id: index,
+        x: pos.x + (Math.random() - 0.5) * 40,
+        y: pos.y + (Math.random() - 0.5) * 40,
+        baseY: pos.y,
+        r: 34,
+        hue: hues[Math.floor(Math.random() * hues.length)],
+        phase: Math.random() * Math.PI * 2
+    });
+}
+
+function spawnFlower(x, y, isSunflower = true) {
+    if (state.flowers.length > 48) state.flowers.shift();
+    state.flowers.push({
+        x,
+        y,
+        isSunflower,
+        scale: 0.05,
+        targetScale: isSunflower ? (0.75 + Math.random() * 0.45) : (0.65 + Math.random() * 0.35),
+        swayPhase: Math.random() * Math.PI * 2,
+        rot: (Math.random() - 0.5) * 0.4,
+        life: 1.0
+    });
+}
+
+function resizeCanvas() {
+    canvasElement.width = window.innerWidth;
+    canvasElement.height = window.innerHeight;
+    if (state.floes.length === 0) {
+        initNatureWorld();
+    }
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+let pose = null;
+let camera = null;
+
+function setSensorBadge(text) {
+    const badge = document.getElementById('sensor-status-badge');
+    if (badge) badge.textContent = `センサー状態: ${text}`;
+}
+
+async function initCameraTracking() {
+    setSensorBadge('カメラ起動中...');
+    try {
+        if (!pose) {
+            pose = new Pose({
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+            });
+
+            pose.setOptions({
+                modelComplexity: 1,
+                smoothLandmarks: true,
+                enableSegmentation: false,
+                minDetectionConfidence: 0.5,
+                minTrackingConfidence: 0.5
+            });
+
+            pose.onResults(onPoseResults);
+        }
+
+        if (!camera) {
+            camera = new Camera(videoElement, {
+                onFrame: async () => {
+                    if (!state.useSimulation && pose) {
+                        await pose.send({ image: videoElement });
+                    }
+                },
+                width: 1280,
+                height: 720,
+                facingMode: 'user'
+            });
+        }
+
+        await camera.start();
+        state.cameraReady = true;
+        state.useSimulation = false;
+        setSensorBadge('カメラ全身センサー稼働中（タッチ併用可）');
+    } catch (err) {
+        console.warn('Camera fallback to touch mode:', err);
+        enableTouchMode();
+    }
+}
+
+function enableTouchMode() {
+    state.useSimulation = true;
+    setSensorBadge('タッチ・マウス操作モード稼働中');
+}
+
+function onPoseResults(results) {
+    state.latestLandmarks = results.poseLandmarks || null;
+    const w = canvasElement.width;
+    const h = canvasElement.height;
+    const newEffectors = [];
+    const sens = state.sensitivityScale;
+
+    if (state.latestLandmarks) {
+        const trackedIndices = [];
+        if (state.trackParts.head) {
+            trackedIndices.push({ idx: 0, id: 'head', r: 36 * sens });
+        }
+        if (state.trackParts.hands) {
+            trackedIndices.push(
+                { idx: 15, id: 'l_wrist', r: 38 * sens },
+                { idx: 16, id: 'r_wrist', r: 38 * sens },
+                { idx: 19, id: 'l_hand', r: 44 * sens },
+                { idx: 20, id: 'r_hand', r: 44 * sens }
+            );
+        }
+        if (state.trackParts.feet) {
+            trackedIndices.push(
+                { idx: 27, id: 'l_foot', r: 40 * sens },
+                { idx: 28, id: 'r_foot', r: 40 * sens }
+            );
+        }
+
+        let leftHandPos = null;
+        let rightHandPos = null;
+
+        trackedIndices.forEach((item) => {
+            const lm = state.latestLandmarks[item.idx];
+            if (lm && lm.visibility > 0.4) {
+                const x = (1 - lm.x) * w;
+                const y = lm.y * h;
+                const prev = state.prevEffectorMap[item.id] || { x, y };
+                const vx = (x - prev.x) * 0.65;
+                const vy = (y - prev.y) * 0.65;
+                state.prevEffectorMap[item.id] = { x, y };
+
+                if (item.id === 'l_hand' || item.id === 'l_wrist') leftHandPos = { x, y, vx, vy };
+                if (item.id === 'r_hand' || item.id === 'r_wrist') rightHandPos = { x, y, vx, vy };
+
+                const speed = Math.hypot(vx, vy);
+                if (speed > 2.2) {
+                    state.lastMovementTime = performance.now();
+                }
+
+                newEffectors.push({
+                    id: item.id,
+                    x,
+                    y,
+                    vx,
+                    vy,
+                    speed,
+                    r: item.r
+                });
+
+                if (speed > 4.2 && Math.random() < 0.4) {
+                    addRipple(x, y, Math.min(80, 28 + speed * 1.4));
+                }
+            }
+        });
+
+        // Hand Clap Detection ("チョイナ！") with generous threshold for special needs students
+        if (leftHandPos && rightHandPos) {
+            const handDist = Math.hypot(leftHandPos.x - rightHandPos.x, leftHandPos.y - rightHandPos.y);
+            const closingSpeed = Math.hypot(leftHandPos.vx - rightHandPos.vx, leftHandPos.vy - rightHandPos.vy);
+            if (handDist < 90 * Math.min(1.4, sens * 0.85) && closingSpeed > 3.8) {
+                triggerChoinaClap((leftHandPos.x + rightHandPos.x) * 0.5, (leftHandPos.y + rightHandPos.y) * 0.5);
+            }
+        }
+    }
+
+    state.effectors = newEffectors;
+}
+
+function addRipple(x, y, maxR = 55, color = 'rgba(186, 230, 253, ') {
+    if (state.ripples.length > 45) state.ripples.shift();
+    state.ripples.push({ x, y, r: 6, maxR, alpha: 0.65, color });
+}
+
+function addExpression(x, y, symbol = '❄️') {
+    if (state.expressions.length > 30) state.expressions.shift();
+    state.expressions.push({
+        x: x + (Math.random() - 0.5) * 24,
+        y: y - 20,
+        vy: -1.1 - Math.random() * 0.45,
+        vx: (Math.random() - 0.5) * 0.6,
+        symbol,
+        alpha: 1,
+        scale: symbol.length > 2 ? 1.0 : (0.95 + Math.random() * 0.35)
+    });
+}
+
+function drawBackgroundAndAurora(w, h, time) {
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    if (state.stage === 'summer') {
+        // Lake Abashiri Summer Night Festival Sky
+        grad.addColorStop(0, '#04091a');
+        grad.addColorStop(0.55, '#0c1f3d');
+        grad.addColorStop(1, '#081b2e');
+    } else if (state.stage === 'autumn') {
+        // Lake Notoro Autumn Sunset & Coral Grass Reflection
+        grad.addColorStop(0, '#1e1b4b');
+        grad.addColorStop(0.45, '#7c2d12');
+        grad.addColorStop(0.75, '#4c0519');
+        grad.addColorStop(1, '#2e0510');
+    } else if (state.stage === 'spring') {
+        // Lake Abashiri Omagari Spring Breeze & Blue Sky
+        grad.addColorStop(0, '#0ea5e9');
+        grad.addColorStop(0.45, '#38bdf8');
+        grad.addColorStop(0.55, '#15803d');
+        grad.addColorStop(1, '#14532d');
+    } else {
+        // Winter Okhotsk Sea
+        if (state.theme === 'day') {
+            grad.addColorStop(0, '#0c2d48');
+            grad.addColorStop(0.45, '#145374');
+            grad.addColorStop(1, '#071e33');
+        } else if (state.theme === 'sunset') {
+            grad.addColorStop(0, '#2c1638');
+            grad.addColorStop(0.35, '#6e354b');
+            grad.addColorStop(0.7, '#23395d');
+            grad.addColorStop(1, '#0b172a');
+        } else {
+            grad.addColorStop(0, '#030b17');
+            grad.addColorStop(0.5, '#092038');
+            grad.addColorStop(1, '#04101e');
+        }
+    }
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    // Camera Water Reflection Blend
+    if (state.cameraReady && !state.useSimulation && state.cameraBlendMode > 0 && videoElement.readyState >= 2) {
+        ctx.save();
+        ctx.globalAlpha = state.cameraBlendMode === 1 ? 0.32 : 0.68;
+        ctx.translate(w, 0);
+        ctx.scale(-1, 1);
+        const vw = videoElement.videoWidth || 1280;
+        const vh = videoElement.videoHeight || 720;
+        const scale = Math.max(w / vw, h / vh);
+        const sw = vw * scale;
+        const sh = vh * scale;
+        ctx.drawImage(videoElement, (w - sw) / 2, (h - sh) / 2, sw, sh);
+        ctx.restore();
+    }
+
+    // Aurora or Soft Sunbeams
+    ctx.save();
+    const beatBoost = (state.ondoMode && !state.gentleSensory) ? natureAudio.beatPulse * 0.07 : 0;
+    if (state.theme === 'aurora' || state.stage === 'winter') {
+        for (let i = 0; i < 3; i++) {
+            ctx.beginPath();
+            ctx.moveTo(0, h * (0.1 + i * 0.05));
+            for (let x = 0; x <= w; x += 60) {
+                const wave = Math.sin(x * 0.004 + time * 0.0014 + i) * (30 + beatBoost * 75);
+                ctx.lineTo(x, h * (0.12 + i * 0.05) + wave);
+            }
+            ctx.lineTo(w, 0);
+            ctx.lineTo(0, 0);
+            ctx.closePath();
+            const aurGrad = ctx.createLinearGradient(0, 0, 0, h * 0.35);
+            aurGrad.addColorStop(0, 'rgba(52, 211, 153, 0.0)');
+            aurGrad.addColorStop(0.5, `rgba(52, 211, 153, ${0.11 + beatBoost})`);
+            aurGrad.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+            ctx.fillStyle = aurGrad;
+            ctx.fill();
+        }
+    }
+    ctx.restore();
+
+    // Festive Okhotsk Lantern Glow on Top Horizon when Ryuhyo Ondo is active
+    if (state.ondoMode) {
+        ctx.save();
+        const lanternCount = Math.max(6, Math.floor(w / 160));
+        for (let i = 0; i < lanternCount; i++) {
+            const lx = ((i + 0.5) / lanternCount) * w + Math.sin(time * 0.002 + i) * 8;
+            const ly = 36 + Math.sin(i * 1.4 + time * 0.003) * 5;
+            const pulse = 1 + (state.gentleSensory ? 0.05 : natureAudio.beatPulse * 0.2);
+
+            const glowGrad = ctx.createRadialGradient(lx, ly, 2, lx, ly, 32 * pulse);
+            glowGrad.addColorStop(0, 'rgba(254, 215, 170, 0.7)');
+            glowGrad.addColorStop(0.45, i % 2 === 0 ? 'rgba(244, 63, 94, 0.3)' : 'rgba(251, 146, 60, 0.3)');
+            glowGrad.addColorStop(1, 'rgba(244, 63, 94, 0.0)');
+            ctx.fillStyle = glowGrad;
+            ctx.beginPath();
+            ctx.arc(lx, ly, 32 * pulse, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
+    }
+}
+
+// Draw Steller's Sea Eagle (天然記念物オオワシ) gliding gracefully across the top of the winter sky
+function drawStellersSeaEagle(w, h, time, activeWindPoints) {
+    const eg = state.eagle;
+    eg.x += eg.vx;
+    eg.wingPhase += 0.045;
+    const flap = Math.sin(eg.wingPhase) * 14;
+    const yPos = eg.y + Math.sin(time * 0.0015) * 18;
+
+    if (eg.x > w + 160) {
+        eg.x = -160;
+        eg.y = 70 + Math.random() * (h * 0.18);
+    }
+
+    // Check if child waves near the eagle
+    for (const ef of activeWindPoints) {
+        if (Math.hypot(ef.x - eg.x, ef.y - yPos) < 90 + ef.r) {
+            addExpression(eg.x, yPos, '🦅✨');
+            natureAudio.playShinobueNote(1174.66, 0.3, 0.08);
+            break;
+        }
+    }
+
+    ctx.save();
+    ctx.translate(eg.x, yPos);
+    ctx.scale(0.9, 0.9);
+
+    // White shoulders & black wings characteristic of Steller's Sea Eagle (オオワシ)
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 7;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-42, -flap);
+    ctx.quadraticCurveTo(-18, -8, 0, 0);
+    ctx.quadraticCurveTo(18, -8, 42, -flap);
+    ctx.stroke();
+
+    // White wing leading edge & wedge tail
+    ctx.strokeStyle = '#f8fafc';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(-36, -flap + 2);
+    ctx.quadraticCurveTo(-15, -6, 0, 0);
+    ctx.quadraticCurveTo(15, -6, 36, -flap + 2);
+    ctx.stroke();
+
+    // Bright Yellow Beak
+    ctx.fillStyle = '#facc15';
+    ctx.beginPath();
+    ctx.arc(10, 2, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+}
+
+// Draw Autumn Lake Notoro Coral Grass (サンゴ草) and Abashiri Crabs (毛ガニ・タラバガニ)
+function updateAndDrawAutumnStage(w, h, time, activeWindPoints) {
+    // 1. Draw Crimson Coral Grass (能取湖のサンゴ草群生地)
+    state.coralPatches.forEach((p) => {
+        const sway = Math.sin(time * 0.002 + p.swayPhase) * 6;
+        ctx.save();
+        ctx.translate(p.x + sway, p.y);
+        const grad = ctx.createRadialGradient(0, 0, 4, 0, 0, p.rx);
+        grad.addColorStop(0, `hsla(${p.hue}, 85%, 52%, 0.78)`);
+        grad.addColorStop(0.7, `hsla(${p.hue - 8}, 80%, 38%, 0.55)`);
+        grad.addColorStop(1, 'rgba(127, 29, 29, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, p.rx, p.ry, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    });
+
+    // 2. Update & Draw Abashiri Crabs (毛ガニ・タラバガニ)
+    state.crabs.forEach((crab) => {
+        // In Action-Driven Mode, crabs wait quietly peeking out of the coral grass until the child moves or touches!
+        const isChildMoving = (performance.now() - state.lastMovementTime) < 1200;
+        if (!state.actionDrivenMode || isChildMoving || crab.danceTimer > 0) {
+            crab.x += crab.vx * (crab.danceTimer > 0 ? 1.8 : 1.0);
+            crab.legPhase += 0.14;
+        } else {
+            // Subtle beckoning claw wave to invite the child to reach out
+            crab.legPhase += 0.03;
+        }
+        if (crab.x < 60 || crab.x > w - 60) crab.vx *= -1;
+        if (crab.cooldown > 0) crab.cooldown--;
+        if (crab.danceTimer > 0) crab.danceTimer--;
+
+        // Gravity on jump
+        crab.y += crab.vy;
+        if (crab.y < crab.baseY) {
+            crab.vy += 0.28;
+        } else {
+            crab.y = crab.baseY;
+            crab.vy = 0;
+        }
+
+        // Interaction with student's hands/body (requires movement in Action-Driven mode so static bodies don't auto-trigger)
+        for (const ef of activeWindPoints) {
+            const d = Math.hypot(crab.x - ef.x, crab.y - ef.y);
+            const movingEnough = !state.actionDrivenMode || (ef.speed || Math.hypot(ef.vx, ef.vy)) > 1.2;
+            if (d < 55 + ef.r && crab.cooldown === 0 && movingEnough) {
+                crab.cooldown = 35;
+                crab.danceTimer = 85;
+                crab.vy = -5.8;
+                natureAudio.playCrabBubble();
+                addExpression(crab.x, crab.y - 25, state.ondoMode ? 'チョイナ🦀' : '🦀✨');
+                for (let b = 0; b < 5; b++) {
+                    addBubble(crab.x + (Math.random() - 0.5) * 35, crab.y - 10);
+                }
+                break;
+            }
+        }
+
+        // Draw Crab
+        ctx.save();
+        const bounce = (crab.danceTimer > 0 || state.ondoMode)
+            ? Math.sin(time * 0.012 + crab.id) * 6
+            : 0;
+        ctx.translate(crab.x, crab.y + bounce);
+        ctx.scale(crab.scale, crab.scale);
+
+        const isTaraba = crab.type === 'taraba';
+        const shellColor = isTaraba ? '#dc2626' : '#ea580c';
+
+        // Crab Legs (4 on each side)
+        ctx.strokeStyle = shellColor;
+        ctx.lineWidth = 4.5;
+        ctx.lineCap = 'round';
+        for (let side of [-1, 1]) {
+            for (let l = 0; l < 4; l++) {
+                const legWave = Math.sin(crab.legPhase + l * 0.9) * 6;
+                ctx.beginPath();
+                ctx.moveTo(side * 18, -4 + l * 4);
+                ctx.quadraticCurveTo(side * 36, -10 + l * 6, side * 46, 8 + l * 5 + legWave);
+                ctx.stroke();
+            }
+        }
+
+        // Claws (ハサミ) raised high and snapping rhythmically!
+        const clawSnap = (crab.danceTimer > 0 || state.ondoMode)
+            ? Math.abs(Math.sin(time * 0.015 + crab.id)) * 0.45
+            : 0.15;
+        for (let side of [-1, 1]) {
+            ctx.save();
+            ctx.translate(side * 22, -14);
+            ctx.rotate(side * (-0.35 + clawSnap * 0.4));
+            ctx.fillStyle = shellColor;
+            ctx.beginPath();
+            ctx.ellipse(0, -14, 9, 14, side * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // Carapace / Shell
+        ctx.fillStyle = shellColor;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 28, 20, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#fef08a';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Cute Eyes on stalks
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(-9, -18, 3.5, 0, Math.PI * 2);
+        ctx.arc(9, -18, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(-8, -19, 1.2, 0, Math.PI * 2);
+        ctx.arc(10, -19, 1.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+    });
+
+    // 3. Draw rising Crab Bubbles
+    for (let i = state.bubbles.length - 1; i >= 0; i--) {
+        const b = state.bubbles[i];
+        b.y += b.vy;
+        b.x += Math.sin(time * 0.008 + b.wobble) * 0.6;
+        b.alpha -= 0.012;
+        if (b.alpha <= 0) {
+            state.bubbles.splice(i, 1);
+            continue;
+        }
+        ctx.save();
+        ctx.strokeStyle = `rgba(224, 242, 254, ${b.alpha})`;
+        ctx.fillStyle = `rgba(255, 255, 255, ${b.alpha * 0.25})`;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+    }
+}
+
+// Update & Draw Summer Lake Abashiri Fireworks Stage
+function updateAndDrawSummerFireworks(w, h, time, activeWindPoints) {
+    const now = performance.now();
+
+    // 1. Draw & Update Beckoning Firework Orbs (光る花火玉：手を伸ばして触ると大輪の花火が打ち上がる！)
+    if (state.fireworkOrbs.length < 4) {
+        spawnFireworkOrb(w, h, state.fireworkOrbs.length);
+    }
+
+    for (let i = state.fireworkOrbs.length - 1; i >= 0; i--) {
+        const orb = state.fireworkOrbs[i];
+        const bobY = orb.baseY + Math.sin(time * 0.003 + orb.phase) * 10;
+        orb.y = bobY;
+
+        // Draw inviting pulsing ring around the Firework Orb
+        const pulse = 1 + Math.sin(time * 0.006 + orb.phase) * 0.14;
+        ctx.save();
+        const grad = ctx.createRadialGradient(orb.x, orb.y, 4, orb.x, orb.y, orb.r * 1.45 * pulse);
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(0.4, `hsla(${orb.hue}, 95%, 68%, 0.85)`);
+        grad.addColorStop(1, `hsla(${orb.hue}, 95%, 60%, 0.0)`);
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(orb.x, orb.y, orb.r * 1.45 * pulse, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = `hsla(${orb.hue}, 95%, 85%, 0.8)`;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.arc(orb.x, orb.y, orb.r * pulse, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.font = '20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🎇', orb.x, orb.y);
+        ctx.restore();
+
+        // Check if child reaches out and touches the Firework Orb!
+        for (const ef of activeWindPoints) {
+            if (Math.hypot(ef.x - orb.x, ef.y - orb.y) < orb.r + ef.r * 0.85) {
+                spawnFireworkBurst(orb.x, orb.y, orb.y > h * 0.62);
+                addExpression(orb.x, orb.y - 18, 'ドーン！🎆');
+                state.fireworkOrbs.splice(i, 1);
+                setTimeout(() => spawnFireworkOrb(canvasElement.width, canvasElement.height, orb.id), 900);
+                break;
+            }
+        }
+    }
+
+    // 2. Also allow vigorous hand swings to launch fireworks directly
+    for (const ef of activeWindPoints) {
+        const speed = Math.hypot(ef.vx, ef.vy);
+        if (speed > 5.8 && now - state.lastFireworkSpawnTime > 260) {
+            state.lastFireworkSpawnTime = now;
+            const isUnderwater = ef.y > h * 0.62;
+            spawnFireworkBurst(ef.x, ef.y, isUnderwater);
+            break;
+        }
+    }
+
+    // Render firework sparks and their reflection on Lake Abashiri water surface
+    ctx.save();
+    for (let i = state.fireworkSparks.length - 1; i >= 0; i--) {
+        const sp = state.fireworkSparks[i];
+        sp.x += sp.vx;
+        sp.y += sp.vy;
+        sp.vy += 0.055; // Gentle gravity
+        sp.vx *= 0.985;
+        sp.vy *= 0.985;
+        sp.alpha -= sp.decay;
+
+        if (sp.alpha <= 0) {
+            state.fireworkSparks.splice(i, 1);
+            continue;
+        }
+
+        ctx.fillStyle = `hsla(${sp.hue}, 95%, 70%, ${sp.alpha})`;
+        ctx.beginPath();
+        ctx.arc(sp.x, sp.y, sp.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Shimmering reflection on Lake Abashiri water surface below
+        const reflectY = h - (sp.y * 0.28);
+        ctx.fillStyle = `hsla(${sp.hue}, 90%, 65%, ${sp.alpha * 0.28})`;
+        ctx.beginPath();
+        ctx.ellipse(sp.x, reflectY, sp.size * 2.2, sp.size * 0.7, 0, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.restore();
+}
+
+// Update & Draw Spring Lake Abashiri Omagari Sunflowers & Shibazakura Stage
+function updateAndDrawSpringFlowers(w, h, time, activeWindPoints) {
+    const now = performance.now();
+    for (const ef of activeWindPoints) {
+        const speed = Math.hypot(ef.vx, ef.vy);
+        if (speed > 3.5 && now - state.lastFireworkSpawnTime > 180) {
+            state.lastFireworkSpawnTime = now;
+            spawnFlower(ef.x + (Math.random() - 0.5) * 30, ef.y + (Math.random() - 0.5) * 30, Math.random() < 0.6);
+            natureAudio.playIceTouch(1.0);
+            break;
+        }
+    }
+
+    // Draw Sunflowers (ひまわり) and Pink Moss Phlox (芝桜)
+    state.flowers.forEach((fl) => {
+        fl.scale += (fl.targetScale - fl.scale) * 0.1;
+        const sway = Math.sin(time * 0.003 + fl.swayPhase) * 0.12;
+
+        ctx.save();
+        ctx.translate(fl.x, fl.y);
+        ctx.rotate(fl.rot + sway);
+        ctx.scale(fl.scale, fl.scale);
+
+        if (fl.isSunflower) {
+            // 12 Golden Petals
+            ctx.fillStyle = '#facc15';
+            for (let p = 0; p < 12; p++) {
+                ctx.save();
+                ctx.rotate((Math.PI * 2 * p) / 12);
+                ctx.beginPath();
+                ctx.ellipse(0, -20, 6.5, 14, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+            // Warm Brown Seed Center
+            ctx.fillStyle = '#713f12';
+            ctx.beginPath();
+            ctx.arc(0, 0, 12, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            // 5 Heart-shaped Pink Shibazakura Petals
+            ctx.fillStyle = '#f472b6';
+            for (let p = 0; p < 5; p++) {
+                ctx.save();
+                ctx.rotate((Math.PI * 2 * p) / 5);
+                ctx.beginPath();
+                ctx.ellipse(0, -13, 6, 10, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+            ctx.fillStyle = '#fdf2f8';
+            ctx.beginPath();
+            ctx.arc(0, 0, 4.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
+    });
+
+    // Draw fluttering Butterflies attracted to player's hands
+    state.butterflies.forEach((bf) => {
+        bf.x += bf.vx;
+        bf.y += bf.vy + Math.sin(time * 0.008 + bf.wingPhase) * 0.7;
+        if (bf.x < 20 || bf.x > w - 20) bf.vx *= -1;
+        if (bf.y < 40 || bf.y > h - 40) bf.vy *= -1;
+
+        for (const ef of activeWindPoints) {
+            const d = Math.hypot(ef.x - bf.x, ef.y - bf.y);
+            if (d < 220 && d > 10) {
+                bf.x += ((ef.x - bf.x) / d) * 1.2;
+                bf.y += ((ef.y - bf.y) / d) * 1.2;
+            }
+        }
+
+        const wing = Math.abs(Math.sin(time * 0.018 + bf.wingPhase));
+        ctx.save();
+        ctx.translate(bf.x, bf.y);
+        ctx.fillStyle = bf.color;
+        ctx.beginPath();
+        ctx.ellipse(-7 * wing, -3, 8 * wing, 11, -0.3, 0, Math.PI * 2);
+        ctx.ellipse(7 * wing, -3, 8 * wing, 11, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    });
+}
+
+// Draw a realistic & artistic drift ice floe (流氷) with optional snow-lantern (氷雪灯篭)
+function drawIceFloe(floe, time) {
+    ctx.save();
+    ctx.translate(floe.x, floe.y);
+    ctx.rotate(floe.angle);
+
+    if (state.ondoMode && natureAudio.beatPulse > 0.05 && !state.gentleSensory) {
+        const s = 1 + natureAudio.beatPulse * 0.025;
+        ctx.scale(s, s);
+    }
+
+    ctx.beginPath();
+    floe.vertices.forEach((v, idx) => {
+        const px = Math.cos(v.angle) * (v.r + 5);
+        const py = Math.sin(v.angle) * (v.r + 5) + 9;
+        if (idx === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+    });
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(56, 189, 248, 0.22)';
+    ctx.fill();
+
+    ctx.beginPath();
+    floe.vertices.forEach((v, idx) => {
+        const px = Math.cos(v.angle) * v.r;
+        const py = Math.sin(v.angle) * v.r;
+        if (idx === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+    });
+    ctx.closePath();
+
+    const iceGrad = ctx.createRadialGradient(-floe.radius * 0.25, -floe.radius * 0.25, 5, 0, 0, floe.radius * 1.1);
+    if (state.theme === 'sunset') {
+        iceGrad.addColorStop(0, 'rgba(255, 245, 245, 0.94)');
+        iceGrad.addColorStop(0.7, 'rgba(224, 231, 255, 0.86)');
+        iceGrad.addColorStop(1, 'rgba(165, 180, 252, 0.75)');
+    } else {
+        iceGrad.addColorStop(0, 'rgba(248, 252, 255, 0.95)');
+        iceGrad.addColorStop(0.65, 'rgba(224, 242, 254, 0.88)');
+        iceGrad.addColorStop(1, 'rgba(147, 197, 253, 0.75)');
+    }
+    ctx.fillStyle = iceGrad;
+    ctx.fill();
+
+    ctx.lineWidth = 2.2 + floe.glow * 3;
+    ctx.strokeStyle = floe.glow > 0.05
+        ? (state.ondoMode
+            ? `rgba(253, 224, 71, ${0.65 + floe.glow * 0.35})`
+            : `rgba(186, 230, 253, ${0.7 + floe.glow * 0.3})`)
+        : 'rgba(255, 255, 255, 0.65)';
+    ctx.stroke();
+
+    ctx.beginPath();
+    floe.vertices.forEach((v, idx) => {
+        if (idx % 2 === 0) {
+            const px = Math.cos(v.angle) * (v.r * 0.55);
+            const py = Math.sin(v.angle) * (v.r * 0.55);
+            if (idx === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+        }
+    });
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+    ctx.fill();
+
+    if (state.ondoMode && floe.hasLantern) {
+        const lx = -floe.radius * 0.42;
+        const ly = -floe.radius * 0.25;
+        const flicker = 0.85 + Math.sin(time * 0.01 + floe.id) * 0.12;
+
+        const lanternGlow = ctx.createRadialGradient(lx, ly, 2, lx, ly, 22 * flicker);
+        lanternGlow.addColorStop(0, 'rgba(254, 240, 138, 0.95)');
+        lanternGlow.addColorStop(0.5, 'rgba(251, 146, 60, 0.45)');
+        lanternGlow.addColorStop(1, 'rgba(251, 146, 60, 0.0)');
+        ctx.fillStyle = lanternGlow;
+        ctx.beginPath();
+        ctx.arc(lx, ly, 22 * flicker, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = 'rgba(255, 251, 235, 0.85)';
+        ctx.beginPath();
+        ctx.arc(lx, ly, 6.5, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    ctx.restore();
+}
+
+// Draw an adorable plump seal (アザラシ) with Abashiri Ryuhyo Ondo festive headband & rhythmic dance
+function drawSeal(seal, time) {
+    ctx.save();
+    ctx.translate(seal.x, seal.y);
+
+    const ondoSway = state.ondoMode
+        ? Math.sin(time * 0.0085 + seal.id * 1.7) * 0.14
+        : 0;
+    const ondoBounce = state.ondoMode
+        ? -Math.abs(Math.sin(time * 0.0085 + seal.id)) * (4 + natureAudio.beatPulse * 6)
+        : 0;
+
+    const breathe = 1 + Math.sin(time * 0.004 + seal.animTimer) * 0.035;
+    const bounceY = (seal.state === 'happy'
+        ? -Math.abs(Math.sin(time * 0.015)) * 12
+        : 0) + ondoBounce;
+    const rollAngle = (seal.state === 'rolling'
+        ? Math.sin(time * 0.012) * 0.38
+        : 0) + ondoSway;
+
+    ctx.translate(0, bounceY);
+    ctx.rotate(rollAngle);
+    ctx.scale(seal.facing * seal.scale, seal.scale * breathe);
+
+    ctx.beginPath();
+    ctx.ellipse(0, 14, 34, 12, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(12, 45, 72, 0.25)';
+    ctx.fill();
+
+    let bodyTop = '#cbd5e1';
+    let bodyBottom = '#f1f5f9';
+    let spotColor = 'rgba(71, 85, 105, 0.45)';
+    if (seal.type === 'baby') {
+        bodyTop = '#ffffff';
+        bodyBottom = '#f8fafc';
+        spotColor = 'rgba(203, 213, 225, 0.25)';
+    } else if (seal.type === 'ribbon') {
+        bodyTop = '#475569';
+        bodyBottom = '#94a3b8';
+        spotColor = 'rgba(241, 245, 249, 0.65)';
+    }
+
+    ctx.beginPath();
+    const tailWag = seal.state === 'happy' || seal.state === 'swimming' || state.ondoMode
+        ? Math.sin(time * 0.018) * 6
+        : 0;
+    ctx.ellipse(-34, 4 + tailWag, 12, 6, -0.2, 0, Math.PI * 2);
+    ctx.ellipse(-32, 10 - tailWag, 11, 5, 0.25, 0, Math.PI * 2);
+    ctx.fillStyle = bodyTop;
+    ctx.fill();
+
+    const bodyGrad = ctx.createLinearGradient(0, -22, 0, 18);
+    bodyGrad.addColorStop(0, bodyTop);
+    bodyGrad.addColorStop(1, bodyBottom);
+    ctx.beginPath();
+    ctx.ellipse(-2, 0, 33, 21, 0, 0, Math.PI * 2);
+    ctx.fillStyle = bodyGrad;
+    ctx.fill();
+
+    ctx.fillStyle = spotColor;
+    if (seal.type === 'spotted') {
+        const spots = [[-14, -8, 3], [-5, -12, 2.5], [-18, -1, 2.2], [-8, -3, 3.2], [-22, -6, 2]];
+        spots.forEach(([sx, sy, sr]) => {
+            ctx.beginPath();
+            ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    } else if (seal.type === 'ribbon') {
+        ctx.strokeStyle = 'rgba(248, 250, 252, 0.75)';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(-8, 0, 16, -Math.PI * 0.7, Math.PI * 0.5);
+        ctx.stroke();
+    }
+
+    ctx.beginPath();
+    ctx.arc(20, -4, 16.5, 0, Math.PI * 2);
+    ctx.fillStyle = bodyGrad;
+    ctx.fill();
+
+    if (state.ondoMode) {
+        ctx.save();
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 3.2;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.arc(19, -5, 15.5, -Math.PI * 0.78, -Math.PI * 0.22);
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(18, -20, 3.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    ctx.save();
+    ctx.translate(8, 10);
+    const flipperAngle = (seal.state === 'happy' || seal.state === 'rolling')
+        ? -0.65 + Math.sin(time * 0.025) * 0.45
+        : (state.ondoMode ? -0.35 + Math.sin(time * 0.012 + seal.id) * 0.35 : 0.3);
+    ctx.rotate(flipperAngle);
+    ctx.beginPath();
+    ctx.ellipse(0, 5, 6, 12, -0.3, 0, Math.PI * 2);
+    ctx.fillStyle = bodyTop;
+    ctx.fill();
+    ctx.restore();
+
+    if (seal.state === 'happy' || seal.state === 'rolling' || (state.ondoMode && natureAudio.beatPulse > 0.6)) {
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 2.2;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.arc(24, -7, 3.2, Math.PI * 1.1, Math.PI * 1.9);
+        ctx.stroke();
+    } else {
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(24, -7, 3.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(25, -8.2, 1.1, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    ctx.fillStyle = `rgba(251, 113, 133, ${0.35 + seal.blush * 0.45 + (state.ondoMode ? 0.15 : 0)})`;
+    ctx.beginPath();
+    ctx.ellipse(22, -2, 4.2, 2.4, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#334155';
+    ctx.beginPath();
+    ctx.ellipse(34, -5, 2.5, 1.8, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(100, 116, 139, 0.6)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(31, -2); ctx.lineTo(38, 0);
+    ctx.moveTo(30, -1); ctx.lineTo(37, 2.5);
+    ctx.stroke();
+
+    ctx.restore();
+}
+
+function drawClione(c, time) {
+    ctx.save();
+    ctx.translate(c.x, c.y);
+    ctx.scale(c.scale, c.scale);
+    const wing = Math.sin(time * 0.012 + c.wingPhase);
+
+    const glowGrad = ctx.createRadialGradient(0, 0, 2, 0, 0, 22 + c.glow * 12);
+    glowGrad.addColorStop(0, 'rgba(186, 230, 253, 0.55)');
+    glowGrad.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+    ctx.fillStyle = glowGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, 22 + c.glow * 12, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(224, 242, 254, 0.75)';
+    ctx.beginPath();
+    ctx.ellipse(-9, -2, 8, 4.5, wing * 0.5, 0, Math.PI * 2);
+    ctx.ellipse(9, -2, 8, 4.5, -wing * 0.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(240, 249, 255, 0.82)';
+    ctx.beginPath();
+    ctx.moveTo(0, -14);
+    ctx.quadraticCurveTo(8, -2, 0, 15);
+    ctx.quadraticCurveTo(-8, -2, 0, -14);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(251, 113, 133, 0.78)';
+    ctx.beginPath();
+    ctx.arc(0, -2, 3.8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+}
+
+function animateNatureLoop() {
+    const time = performance.now();
+    const w = canvasElement.width;
+    const h = canvasElement.height;
+    ctx.clearRect(0, 0, w, h);
+
+    natureAudio.updateAudioReactivePulse();
+    drawBackgroundAndAurora(w, h, time);
+
+    const activeWindPoints = [...state.effectors];
+    if (state.pointer.active) {
+        activeWindPoints.push({
+            id: 'pointer',
+            x: state.pointer.x,
+            y: state.pointer.y,
+            vx: state.pointer.vx,
+            vy: state.pointer.vy,
+            r: 48 * state.sensitivityScale
+        });
+        state.pointer.vx *= 0.85;
+        state.pointer.vy *= 0.85;
+    }
+
+    // Water Ripples beneath objects
+    for (let i = state.ripples.length - 1; i >= 0; i--) {
+        const rp = state.ripples[i];
+        rp.r += (rp.maxR - rp.r) * 0.06 + 0.5;
+        rp.alpha -= 0.012;
+        if (rp.alpha <= 0) {
+            state.ripples.splice(i, 1);
+            continue;
+        }
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
+        ctx.strokeStyle = `${rp.color}${rp.alpha})`;
+        ctx.lineWidth = 2.2;
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    // STAGE-SPECIFIC RENDERING & INTERACTION
+    if (state.stage === 'winter') {
+        // Steller's Sea Eagle gliding across top sky
+        drawStellersSeaEagle(w, h, time, activeWindPoints);
+
+        // Respawn new compact drift ice gently from the outer edges if the child pushed floes off-screen
+        if (state.floes.length < 7) {
+            state.floes.push(createSingleFloe(Date.now() + Math.random(), w, h, true));
+        }
+
+        // Drift Ice Floes
+        for (let i = state.floes.length - 1; i >= 0; i--) {
+            const floe = state.floes[i];
+
+            // Gentle natural drift only around the bottom/edges; keep the center face zone clear!
+            if (!state.actionDrivenMode) {
+                floe.vx += Math.sin(time * 0.0006 + floe.id) * 0.004;
+                floe.vy += Math.cos(time * 0.0004 + floe.id) * 0.002;
+            } else {
+                // Softly guide unpushed floes away from the center-top face area (x: 28%~72%, y: 12%~58%)
+                if (!floe.pushedByChild && floe.x > w * 0.28 && floe.x < w * 0.72 && floe.y < h * 0.58) {
+                    floe.vy += 0.015;
+                }
+            }
+
+            // Interaction with child's hands / active body parts
+            for (const ef of activeWindPoints) {
+                const dx = floe.x - ef.x;
+                const dy = floe.y - ef.y;
+                const dist = Math.hypot(dx, dy);
+                const minDist = floe.radius + ef.r;
+                const speed = ef.speed || Math.hypot(ef.vx, ef.vy);
+
+                // In Action-Driven mode, require actual movement so standing still doesn't constantly trigger
+                if (dist < minDist && dist > 0.01 && (!state.actionDrivenMode || speed > 0.9)) {
+                    const overlap = (minDist - dist) / minDist;
+                    const nx = dx / dist;
+                    const ny = dy / dist;
+
+                    // Strong, rewarding push so the child can sweep the ice floe right off the screen!
+                    floe.vx += nx * overlap * 0.95 + ef.vx * 0.16;
+                    floe.vy += ny * overlap * 0.95 + ef.vy * 0.16;
+                    floe.vAngle += (ef.vx * ny - ef.vy * nx) * 0.0002;
+                    floe.pushedByChild = true;
+
+                    if (floe.glow < 0.3) {
+                        natureAudio.playIceTouch(floe.radius / 60);
+                        addRipple(floe.x - nx * floe.radius * 0.6, floe.y - ny * floe.radius * 0.6, floe.radius * 1.4);
+                    }
+                    floe.glow = Math.min(1, floe.glow + 0.35);
+                }
+            }
+
+            // Floe-to-floe collision
+            for (let j = i - 1; j >= 0; j--) {
+                const other = state.floes[j];
+                const dx = other.x - floe.x;
+                const dy = other.y - floe.y;
+                const dist = Math.hypot(dx, dy);
+                const minDist = (floe.radius + other.radius) * 0.9;
+
+                if (dist < minDist && dist > 0.01) {
+                    const nx = dx / dist;
+                    const ny = dy / dist;
+                    const push = (minDist - dist) * 0.03;
+                    floe.vx -= nx * push;
+                    floe.vy -= ny * push;
+                    other.vx += nx * push;
+                    other.vy += ny * push;
+                }
+            }
+
+            floe.x += floe.vx;
+            floe.y += floe.vy;
+            floe.angle += floe.vAngle;
+            floe.vx *= 0.988;
+            floe.vy *= 0.988;
+            floe.vAngle *= 0.97;
+            floe.glow *= 0.94;
+
+            // Allow floes to glide completely off-screen instead of bouncing back and cluttering the view!
+            const outMargin = floe.radius + 90;
+            if (
+                floe.x < -outMargin ||
+                floe.x > w + outMargin ||
+                floe.y < -outMargin ||
+                floe.y > h + outMargin
+            ) {
+                // If a seal was riding this floe, let the seal swim back happily to another floe
+                state.seals.forEach((s) => {
+                    if (s.floeId === floe.id) {
+                        s.state = 'swimming';
+                        s.reactionTimer = 60;
+                        s.x = Math.max(60, Math.min(w - 60, s.x));
+                        s.y = Math.max(h * 0.45, Math.min(h - 60, s.y));
+                        s.vx = (w * 0.5 - s.x) * 0.015;
+                        s.vy = (h * 0.72 - s.y) * 0.015;
+                    }
+                });
+                state.floes.splice(i, 1);
+                continue;
+            }
+
+            drawIceFloe(floe, time);
+        }
+
+        // Cliones
+        state.cliones.forEach((c) => {
+            c.x += c.vx + Math.sin(time * 0.002 + c.wingPhase) * 0.35;
+            c.y += c.vy;
+            c.glow *= 0.95;
+
+            for (const ef of activeWindPoints) {
+                const d = Math.hypot(c.x - ef.x, c.y - ef.y);
+                if (d < 150 && d > 5) {
+                    c.x += ((ef.x - c.x) / d) * 0.5;
+                    c.y += ((ef.y - c.y) / d) * 0.5;
+                    if (d < 55 && c.glow < 0.2) {
+                        c.glow = 1.0;
+                        addExpression(c.x, c.y, '✨');
+                    }
+                }
+            }
+
+            if (c.y < -30) c.y = h + 20;
+            if (c.x < -30) c.x = w + 20;
+            if (c.x > w + 30) c.x = -20;
+
+            drawClione(c, time);
+        });
+
+        // Seals
+        state.seals.forEach((seal) => {
+            if (seal.patCooldown > 0) seal.patCooldown--;
+            if (seal.reactionTimer > 0) {
+                seal.reactionTimer--;
+                if (seal.reactionTimer === 0 && seal.state !== 'swimming') {
+                    seal.state = 'resting';
+                }
+            }
+            seal.blush *= 0.96;
+
+            if (seal.state !== 'swimming') {
+                const host = state.floes.find((f) => f.id === seal.floeId);
+                if (host) {
+                    seal.x += (host.x - seal.x) * 0.18;
+                    seal.y += (host.y - 6 - seal.y) * 0.18;
+                }
+            } else {
+                seal.x += seal.vx;
+                seal.y += seal.vy;
+                if (Math.random() < 0.08) addRipple(seal.x, seal.y + 8, 36);
+                for (const floe of state.floes) {
+                    const dist = Math.hypot(seal.x - floe.x, seal.y - floe.y);
+                    const occupied = state.seals.some((s) => s !== seal && s.floeId === floe.id && s.state !== 'swimming');
+                    if (!occupied && dist < floe.radius * 0.7 && seal.reactionTimer <= 0) {
+                        seal.floeId = floe.id;
+                        seal.state = 'happy';
+                        seal.reactionTimer = 70;
+                        natureAudio.playWaterSplash();
+                        addExpression(seal.x, seal.y, state.ondoMode ? 'チョイナ♪' : '🎵');
+                        break;
+                    }
+                }
+                if (seal.x < 40 || seal.x > w - 40) seal.vx *= -1;
+                if (seal.y < h * 0.15 || seal.y > h - 50) seal.vy *= -1;
+                seal.facing = seal.vx >= 0 ? 1 : -1;
+            }
+
+            for (const ef of activeWindPoints) {
+                const d = Math.hypot(seal.x - ef.x, seal.y - ef.y);
+                if (d < 48 + ef.r * 0.8 && seal.patCooldown === 0) {
+                    seal.patCooldown = 40;
+                    seal.blush = 1.0;
+                    natureAudio.playSealHappy(seal.type === 'baby');
+
+                    const rand = Math.random();
+                    if (rand < 0.45) {
+                        seal.state = 'happy';
+                        seal.reactionTimer = 95;
+                        addExpression(seal.x, seal.y, state.ondoMode ? 'チョイナ♪' : '💕');
+                    } else if (rand < 0.82) {
+                        seal.state = 'rolling';
+                        seal.reactionTimer = 110;
+                        addExpression(seal.x, seal.y, state.ondoMode ? 'ソレ♪' : '🎶');
+                    } else {
+                        seal.state = 'swimming';
+                        seal.reactionTimer = 110;
+                        const angle = Math.random() * Math.PI * 2;
+                        seal.vx = Math.cos(angle) * 2.2;
+                        seal.vy = Math.sin(angle) * 1.5;
+                        natureAudio.playWaterSplash();
+                        addRipple(seal.x, seal.y, 75);
+                        addExpression(seal.x, seal.y, '💧');
+                    }
+                    break;
+                }
+            }
+
+            drawSeal(seal, time);
+        });
+    } else if (state.stage === 'summer') {
+        updateAndDrawSummerFireworks(w, h, time, activeWindPoints);
+    } else if (state.stage === 'autumn') {
+        updateAndDrawAutumnStage(w, h, time, activeWindPoints);
+    } else if (state.stage === 'spring') {
+        updateAndDrawSpringFlowers(w, h, time, activeWindPoints);
+    }
+
+    // Gentle Glowing Aura at Student's Hands / Body Points
+    activeWindPoints.forEach((ef) => {
+        ctx.save();
+        const auraGrad = ctx.createRadialGradient(ef.x, ef.y, 4, ef.x, ef.y, ef.r * 1.15);
+        if (state.ondoMode) {
+            auraGrad.addColorStop(0, 'rgba(254, 240, 138, 0.55)');
+            auraGrad.addColorStop(0.5, 'rgba(251, 146, 60, 0.22)');
+            auraGrad.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+        } else {
+            auraGrad.addColorStop(0, 'rgba(224, 242, 254, 0.5)');
+            auraGrad.addColorStop(0.5, 'rgba(125, 211, 252, 0.2)');
+            auraGrad.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+        }
+        ctx.fillStyle = auraGrad;
+        ctx.beginPath();
+        ctx.arc(ef.x, ef.y, ef.r * 1.15, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    });
+
+    // Floating Expressions & Kakegoe Text
+    for (let i = state.expressions.length - 1; i >= 0; i--) {
+        const ex = state.expressions[i];
+        ex.x += ex.vx;
+        ex.y += ex.vy;
+        ex.alpha -= 0.015;
+        if (ex.alpha <= 0) {
+            state.expressions.splice(i, 1);
+            continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = ex.alpha;
+        ctx.font = `bold ${Math.round(24 * ex.scale)}px "Zen Maru Gothic", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#fef08a';
+        ctx.shadowColor = 'rgba(2, 12, 27, 0.9)';
+        ctx.shadowBlur = 10;
+        ctx.fillText(ex.symbol, ex.x, ex.y);
+        ctx.restore();
+    }
+
+    // Gentle Snow or Floating Petals
+    if (state.stage === 'winter' || state.stage === 'spring') {
+        ctx.save();
+        ctx.fillStyle = state.stage === 'spring' ? '#fbcfe8' : '#ffffff';
+        state.snowflakes.forEach((s) => {
+            s.y += s.vy;
+            s.x += s.vx + Math.sin(time * 0.001 + s.y * 0.01) * 0.25;
+            if (s.y > h + 10) {
+                s.y = -10;
+                s.x = Math.random() * w;
+            }
+            ctx.globalAlpha = s.alpha;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        ctx.restore();
+    }
+
+    requestAnimationFrame(animateNatureLoop);
+}
+
+function updatePointer(clientX, clientY) {
+    const prevX = state.pointer.x < 0 ? clientX : state.pointer.x;
+    const prevY = state.pointer.y < 0 ? clientY : state.pointer.y;
+    state.pointer.vx = (clientX - prevX) * 0.55;
+    state.pointer.vy = (clientY - prevY) * 0.55;
+    state.pointer.x = clientX;
+    state.pointer.y = clientY;
+    state.pointer.active = true;
+
+    const speed = Math.hypot(state.pointer.vx, state.pointer.vy);
+    if (speed > 4 && Math.random() < 0.4) {
+        addRipple(clientX, clientY, Math.min(65, 28 + speed * 1.2));
+    }
+}
+
+canvasElement.addEventListener('mousemove', (e) => {
+    updatePointer(e.clientX, e.clientY);
+});
+canvasElement.addEventListener('dblclick', (e) => {
+    natureAudio.init();
+    triggerChoinaClap(e.clientX, e.clientY);
+});
+canvasElement.addEventListener('touchstart', (e) => {
+    natureAudio.init();
+    if (e.touches.length > 0) {
+        updatePointer(e.touches[0].clientX, e.touches[0].clientY);
+        if (state.stage === 'summer') {
+            spawnFireworkBurst(e.touches[0].clientX, e.touches[0].clientY, e.touches[0].clientY > canvasElement.height * 0.65);
+        }
+    }
+    if (e.touches.length >= 2) {
+        triggerChoinaClap(e.touches[0].clientX, e.touches[0].clientY);
+    }
+}, { passive: true });
+canvasElement.addEventListener('touchmove', (e) => {
+    if (e.touches.length > 0) {
+        updatePointer(e.touches[0].clientX, e.touches[0].clientY);
+    }
+}, { passive: true });
+
+// Switch Access / Keyboard support for Special Needs Classrooms (Space or Enter triggers Choina / Big Firework)
+window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' || e.code === 'Enter') {
+        const modal = document.getElementById('settings-modal');
+        if (modal && modal.classList.contains('hidden')) {
+            e.preventDefault();
+            natureAudio.init();
+            triggerChoinaClap(
+                 canvasElement.width * (0.3 + Math.random() * 0.4),
+                 canvasElement.height * (0.35 + Math.random() * 0.3)
+            );
+        }
+    }
+});
+
+// Change Abashiri Seasonal Stage
+function selectStage(stageKey) {
+    if (!STAGES[stageKey]) return;
+    state.stage = stageKey;
+    const info = STAGES[stageKey];
+
+    // Update corner dock quick buttons
+    document.getElementById('quick-stage-icon').textContent = info.icon;
+    document.getElementById('quick-stage-name').textContent = info.name;
+    document.getElementById('quick-action-label').textContent = info.actionLabel;
+
+    // Highlight active stage card in Educator Modal
+    document.querySelectorAll('.stage-card').forEach((card) => {
+        card.classList.toggle('active', card.getAttribute('data-stage') === stageKey);
+    });
+
+    showStageToast(stageKey);
+    triggerChoinaClap(canvasElement.width * 0.5, canvasElement.height * 0.45);
+}
+
+document.querySelectorAll('.stage-card').forEach((card) => {
+    card.addEventListener('click', () => {
+        natureAudio.init();
+        selectStage(card.getAttribute('data-stage'));
+    });
+});
+
+// Quick Corner Dock Controls on Play Screen
+const stageOrder = ['winter', 'summer', 'autumn', 'spring'];
+document.getElementById('quick-stage-btn').addEventListener('click', () => {
+    natureAudio.init();
+    const nextIdx = (stageOrder.indexOf(state.stage) + 1) % stageOrder.length;
+    selectStage(stageOrder[nextIdx]);
+});
+
+document.getElementById('quick-action-btn').addEventListener('click', () => {
+    natureAudio.init();
+    triggerChoinaClap(
+        canvasElement.width * (0.3 + Math.random() * 0.4),
+        canvasElement.height * (0.35 + Math.random() * 0.3)
+    );
+});
+
+// Open / Close Separated Educator Settings Modal
+const settingsModal = document.getElementById('settings-modal');
+document.getElementById('open-settings-btn').addEventListener('click', () => {
+    settingsModal.classList.remove('hidden');
+});
+
+document.getElementById('resume-play-btn').addEventListener('click', () => {
+    natureAudio.init();
+    settingsModal.classList.add('hidden');
+    if (state.ondoMode && !natureAudio.ondoPlaying) {
+        natureAudio.toggleOndo(true);
+    }
+    if (!state.cameraReady && !state.useSimulation) {
+        initCameraTracking();
+    }
+    showStageToast(state.stage);
+});
+
+// Abashiri Ryuhyo Ondo Controls inside Educator Modal
+function updateOndoButtonUI() {
+    const label = document.getElementById('modal-ondo-label');
+    const btn = document.getElementById('modal-toggle-ondo-btn');
+    if (state.ondoMode) {
+        label.textContent = '流氷音頭お囃子：ON（演奏中）';
+        btn.className = 'px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-rose-500 text-white shadow-md flex items-center gap-2';
+    } else {
+        label.textContent = '流氷音頭お囃子：OFF（自然音のみ）';
+        btn.className = 'px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-white/15 flex items-center gap-2';
+    }
+}
+
+document.getElementById('modal-toggle-ondo-btn').addEventListener('click', () => {
+    state.ondoMode = natureAudio.toggleOndo(!state.ondoMode);
+    updateOndoButtonUI();
+});
+
+const audioFileInput = document.getElementById('ondo-audio-file');
+document.getElementById('modal-upload-audio-btn').addEventListener('click', () => {
+    audioFileInput.click();
+});
+
+audioFileInput.addEventListener('change', (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+        natureAudio.loadCustomAudioFile(file);
+        document.getElementById('modal-audio-filename').textContent = `🎵 読込済: ${file.name}`;
+        state.ondoMode = natureAudio.toggleOndo(true);
+        updateOndoButtonUI();
+    }
+});
+
+// Sensitivity / Reach Buttons
+document.querySelectorAll('.sens-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        state.sensitivityScale = parseFloat(btn.getAttribute('data-sens'));
+        document.querySelectorAll('.sens-btn').forEach((b) => {
+            const active = b === btn;
+            b.className = active
+                ? 'sens-btn py-2 px-3 rounded-xl text-xs font-bold bg-sky-500/25 text-white border border-sky-400'
+                : 'sens-btn py-2 px-3 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-transparent';
+        });
+    });
+});
+
+// Body Part Filter Buttons (Hands / Head & Face / Feet)
+function updatePartButtonUI(btnId, isEnabled, icon, label) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.innerHTML = `<span>${icon}</span> ${label}: ${isEnabled ? 'ON' : 'OFF'}`;
+    btn.className = isEnabled
+        ? 'py-2 px-2.5 rounded-xl text-xs font-bold bg-sky-500/25 text-white border border-sky-400 flex items-center justify-center gap-1'
+        : 'py-2 px-2.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-400 border border-transparent flex items-center justify-center gap-1';
+}
+
+document.getElementById('part-hands-btn').addEventListener('click', () => {
+    state.trackParts.hands = !state.trackParts.hands;
+    updatePartButtonUI('part-hands-btn', state.trackParts.hands, '👋', '手・腕');
+});
+
+document.getElementById('part-head-btn').addEventListener('click', () => {
+    state.trackParts.head = !state.trackParts.head;
+    updatePartButtonUI('part-head-btn', state.trackParts.head, '🙂', '顔・頭');
+});
+
+document.getElementById('part-feet-btn').addEventListener('click', () => {
+    state.trackParts.feet = !state.trackParts.feet;
+    updatePartButtonUI('part-feet-btn', state.trackParts.feet, '🦶', '足・ステップ');
+});
+
+// Action-Driven Mode Toggle (Wait for movement vs Automatic)
+const actionDrivenBtn = document.getElementById('action-driven-btn');
+actionDrivenBtn.addEventListener('click', () => {
+    state.actionDrivenMode = !state.actionDrivenMode;
+    if (state.actionDrivenMode) {
+        actionDrivenBtn.textContent = 'ON (推奨)';
+        actionDrivenBtn.className = 'px-3.5 py-2 rounded-lg text-xs font-bold bg-amber-500/30 text-amber-200 border border-amber-400 shrink-0';
+    } else {
+        actionDrivenBtn.textContent = 'OFF (自動演出あり)';
+        actionDrivenBtn.className = 'px-3.5 py-2 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 border border-white/10 shrink-0';
+    }
+});
+
+// Camera Reflection Blend Buttons
+document.querySelectorAll('.blend-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        state.cameraBlendMode = parseInt(btn.getAttribute('data-blend'), 10);
+        document.querySelectorAll('.blend-btn').forEach((b) => {
+            const active = b === btn;
+            b.className = active
+                ? 'blend-btn py-2 px-3 rounded-xl text-xs font-bold bg-sky-500/25 text-white border border-sky-400'
+                : 'blend-btn py-2 px-3 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-transparent';
+        });
+    });
+});
+
+// Input Sensor Mode Buttons
+const modeCameraBtn = document.getElementById('mode-camera-btn');
+const modeTouchBtn = document.getElementById('mode-touch-btn');
+modeCameraBtn.addEventListener('click', () => {
+    initCameraTracking();
+    modeCameraBtn.className = 'py-2.5 px-3 rounded-xl text-xs font-bold bg-sky-500/25 text-white border border-sky-400 flex items-center justify-center gap-1.5';
+    modeTouchBtn.className = 'py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-transparent flex items-center justify-center gap-1.5';
+});
+modeTouchBtn.addEventListener('click', () => {
+    enableTouchMode();
+    modeTouchBtn.className = 'py-2.5 px-3 rounded-xl text-xs font-bold bg-sky-500/25 text-white border border-sky-400 flex items-center justify-center gap-1.5';
+    modeCameraBtn.className = 'py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-transparent flex items-center justify-center gap-1.5';
+});
+
+// Gentle Sensory Mode (Snoezelen) Toggle
+const gentleBtn = document.getElementById('gentle-sensory-btn');
+gentleBtn.addEventListener('click', () => {
+    state.gentleSensory = !state.gentleSensory;
+    natureAudio.gentleMode = state.gentleSensory;
+    if (state.gentleSensory) {
+        gentleBtn.textContent = 'ON (やさしい刺激)';
+        gentleBtn.className = 'px-3.5 py-2 rounded-lg text-xs font-bold bg-emerald-500/30 text-emerald-200 border border-emerald-400 shrink-0';
+    } else {
+        gentleBtn.textContent = 'OFF (通常)';
+        gentleBtn.className = 'px-3.5 py-2 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 border border-white/10 shrink-0';
+    }
+});
+
+// Background Theme Selector
+document.querySelectorAll('.theme-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        state.theme = btn.getAttribute('data-theme');
+        document.querySelectorAll('.theme-btn').forEach((b) => {
+            const active = b === btn;
+            b.className = active
+                ? 'theme-btn py-2 px-3 rounded-xl text-xs font-bold bg-sky-500/25 text-white border border-sky-400'
+                : 'theme-btn py-2 px-3 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-transparent';
+        });
+    });
+});
+
+// Spawn Additional Seals / Crabs / Flowers
+document.getElementById('modal-spawn-btn').addEventListener('click', () => {
+    natureAudio.init();
+    const w = canvasElement.width;
+    const h = canvasElement.height;
+    if (state.stage === 'winter' && state.seals.length < 14) {
+        const hostFloe = state.floes[Math.floor(Math.random() * state.floes.length)];
+        const types = ['spotted', 'baby', 'ribbon'];
+        const newType = types[Math.floor(Math.random() * types.length)];
+        state.seals.push({
+            id: Date.now(),
+            type: newType,
+            state: 'happy',
+            floeId: hostFloe.id,
+            x: hostFloe.x,
+            y: hostFloe.y - 6,
+            vx: 0,
+            vy: 0,
+            facing: Math.random() < 0.5 ? 1 : -1,
+            scale: newType === 'baby' ? 0.85 : 1.05,
+            animTimer: Math.random() * 100,
+            reactionTimer: 90,
+            blush: 1,
+            patCooldown: 0
+        });
+        natureAudio.playSealHappy(true);
+    } else if (state.stage === 'autumn' && state.crabs.length < 14) {
+        state.crabs.push({
+            id: Date.now(),
+            type: Math.random() < 0.5 ? 'kegani' : 'taraba',
+            x: w * (0.2 + Math.random() * 0.6),
+            y: h * (0.6 + Math.random() * 0.25),
+            baseY: h * (0.6 + Math.random() * 0.25),
+            vx: (Math.random() < 0.5 ? 1 : -1) * 0.9,
+            vy: -4,
+            scale: 1.0,
+            legPhase: 0,
+            danceTimer: 80,
+            cooldown: 0
+        });
+        natureAudio.playCrabBubble();
+    } else {
+        for (let i = 0; i < 6; i++) {
+            spawnFlower(w * (0.15 + Math.random() * 0.7), h * (0.35 + Math.random() * 0.5), i % 2 === 0);
+        }
+        natureAudio.playIceTouch(1.1);
+    }
+});
+
+// Fullscreen Button inside Modal
+document.getElementById('modal-fullscreen-btn').addEventListener('click', () => {
+    const elem = document.documentElement;
+    if (!document.fullscreenElement) {
+        if (elem.requestFullscreen) elem.requestFullscreen();
+    } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+    }
+});
+
+window.onload = function () {
+    initNatureWorld();
+    animateNatureLoop();
+};
+</script>
+</body>
+</html>
