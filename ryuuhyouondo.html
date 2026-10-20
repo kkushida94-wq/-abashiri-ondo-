@@ -1,0 +1,1141 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#143b47">
+<meta name="description" content="からだの小さな動きが、オホーツクの四季を彩る。カメラ・タッチ・支援スイッチで遊べるネイチャーアート。">
+<title>オホーツク 四季の詩 × 網走流氷音頭</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#183f46;--muted:#657975;--paper:#f6f4ec;--line:#d9e1d8;--teal:#2e716d;--mint:#e3eee6;--gold:#bc924f;--serif:'Shippori Mincho','Yu Mincho',serif;--sans:'Zen Maru Gothic','Yu Gothic',sans-serif;color-scheme:light}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#244f5c;font-family:var(--sans);color:var(--ink)}button,input,select{font:inherit}button{cursor:pointer;-webkit-tap-highlight-color:transparent}button:disabled{cursor:wait;opacity:.6}button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #ba8433;outline-offset:4px}button{touch-action:manipulation}#scene{display:block;width:100%;height:100%;touch-action:none}#cameraVideo{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;left:-10px;top:-10px}#playControls{position:fixed;right:max(20px,env(safe-area-inset-right));bottom:max(20px,env(safe-area-inset-bottom));display:flex;gap:10px;z-index:2}#playControls button{width:54px;height:54px;border:1px solid #ffffff55;border-radius:50%;background:#153c4873;color:#fff9e9;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 3px 16px #12313a15;font-size:22px;display:grid;place-items:center;transition:background .2s,transform .2s}#playControls button:hover{background:#153c48b0;transform:translateY(-2px)}#playControls button:active{transform:scale(.93)}#playControls svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.5}#liveStatus{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+dialog{border:0;padding:0;color:var(--ink);width:min(1040px,calc(100% - 48px));max-height:calc(100dvh - 48px);border-radius:22px;background:var(--paper);box-shadow:0 24px 100px #062e4c55;overflow:auto;overscroll-behavior:contain}dialog::backdrop{background:#163b4a70;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}.panelHead{padding:28px 36px 23px;position:relative;border-bottom:1px solid var(--line);background:#f4f3e9}.eyebrow{font-size:10px;letter-spacing:.23em;font-family:Arial,sans-serif;color:var(--teal);font-weight:600;display:flex;align-items:center;gap:10px}.eyebrow{max-width:calc(100% - 40px);line-height:1.7}.eyebrow:before{flex:none;content:'';width:26px;height:1px;background:var(--gold)}h1{font-family:var(--serif);font-weight:500;font-size:32px;letter-spacing:.12em;margin:10px 0 7px;line-height:1.5}h1 small{font-family:var(--sans);font-size:13px;letter-spacing:.07em;font-weight:500;white-space:nowrap}.intro{font-size:12px;line-height:1.9;color:var(--muted);margin:0}.close{position:absolute;right:25px;top:26px;background:transparent;border:1px solid #cbd7cd;width:40px;height:40px;border-radius:50%;font-size:23px;color:var(--muted)}.tabs{display:flex;gap:25px;padding:0 36px;border-bottom:1px solid var(--line);overflow-x:auto}.tabs button{border:0;border-bottom:2px solid transparent;background:none;white-space:nowrap;font-size:12px;font-weight:700;padding:17px 2px 14px;color:var(--muted);min-height:48px}.tabs button[aria-selected=true]{border-bottom-color:var(--teal);color:var(--teal)}.tabContent{padding:26px 36px 28px;min-height:325px}.tabContent[hidden]{display:none}.playGrid{display:grid;grid-template-columns:1.25fr 1fr;gap:30px}.sectionLabel{font-size:10px;letter-spacing:.17em;color:var(--muted);font-weight:700;display:flex;justify-content:space-between;align-items:center;margin:0 0 12px}.sectionLabel span{font-size:11px;letter-spacing:.02em;font-weight:400;color:var(--teal)}.stages{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stageCard{border:1px solid #d4ded6;background:#fffdf6;border-radius:12px;text-align:left;padding:0;overflow:hidden;position:relative;color:var(--ink);transition:box-shadow .2s,border-color .2s}.stageCard[aria-pressed=true]{border-color:var(--teal);box-shadow:0 0 0 1px var(--teal)}.stageCard canvas{width:100%;height:80px;display:block}.stageCard .stageText{padding:9px 13px 10px;display:flex;gap:9px;align-items:baseline}.stageCard strong{font-family:var(--serif);font-size:17px;font-weight:600}.stageCard small{font-size:10px;color:var(--muted)}.stageCard[aria-pressed=true]:after{content:'✓';position:absolute;top:8px;right:8px;border-radius:50%;background:#f9fff2;color:var(--teal);font-size:11px;width:20px;height:20px;display:grid;place-items:center}.welcomeSide{padding-top:0;display:flex;flex-direction:column}.poem{font-family:var(--serif);font-size:22px;line-height:1.9;font-weight:500;margin:5px 0 12px;letter-spacing:.06em}.hint{font-size:12px;line-height:1.9;color:var(--muted);margin:0 0 16px}.status{font-size:11px;line-height:1.8;display:flex;gap:8px;align-items:flex-start;padding:11px 13px;background:#e6eee6;border-radius:8px;margin-top:auto}.status:before{content:'';flex:none;width:6px;height:6px;border-radius:50%;background:#5b8e76;margin-top:7px}.status[data-state=fallback]:before,.status[data-state=error]:before{background:#b08c55}.panelFoot{padding:18px 36px 22px;border-top:1px solid var(--line);display:flex;gap:18px;align-items:center;background:#eeefe5}.panelFoot .footNote{font-size:10px;color:var(--muted);line-height:1.9;flex:1}.primary{border:1px solid var(--teal);background:var(--teal);color:white;border-radius:9px;min-height:49px;padding:11px 23px;font-size:13px;font-weight:700;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;gap:25px}.secondary{border:1px solid #bbcfc3;background:#fffdf5;color:var(--teal);border-radius:8px;min-height:45px;padding:10px 15px;font-size:12px;font-weight:700}.cameraStart{margin:0 0 11px;text-align:left;width:100%;display:flex;justify-content:space-between;align-items:center}.textButton{background:none;border:0;color:var(--teal);font-size:11px;min-height:44px;padding:8px 0;text-decoration:underline;text-underline-offset:4px}.controlsGrid{display:grid;grid-template-columns:1fr 1fr;gap:28px}.settingBlock{border:1px solid var(--line);border-radius:12px;padding:19px;background:#fffdf666}.settingBlock h2{font-size:14px;margin:0 0 7px;font-weight:700}.settingBlock p{font-size:11px;line-height:1.85;color:var(--muted);margin:0 0 14px}.settingBlock+.settingBlock{margin-top:13px}.row{display:flex;gap:15px;align-items:center;justify-content:space-between;padding:10px 0;min-height:44px}.row label{font-size:12px;line-height:1.8}.switch{appearance:none;-webkit-appearance:none;flex:none;width:39px;height:23px;border-radius:20px;background:#b9c7bf;border:0;position:relative;transition:background .2s;margin:0;cursor:pointer}.switch:after{content:'';position:absolute;width:17px;height:17px;left:3px;top:3px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #1233;transition:transform .2s}.switch:checked{background:var(--teal)}.switch:checked:after{transform:translateX(16px)}select{width:100%;border:1px solid #bfcfc4;color:var(--ink);border-radius:7px;min-height:44px;background:#fffdf8;padding:8px 10px;font-size:12px}.fieldLabel{display:block;font-size:11px;font-weight:700;margin:14px 0 7px}.range{width:100%;accent-color:var(--teal);min-height:32px}.inlineButtons{display:flex;flex-wrap:wrap;gap:8px}.inlineButtons button{flex:1}.fileLabel{display:block;padding:15px;border:1px dashed #9db6a6;border-radius:8px;font-size:12px;line-height:1.9;color:var(--teal);background:#edf2e9}input[type=file]{font-size:11px;width:100%;margin:8px 0 0;color:var(--muted)}input[type=file]::file-selector-button{border:1px solid #bacabf;background:#fffdf8;color:var(--ink);font:inherit;border-radius:5px;min-height:38px;margin-right:10px;padding:5px 8px}.trackName{font-size:11px;color:var(--muted);overflow-wrap:anywhere;min-height:18px;margin:11px 0}.note{font-size:10px!important;color:#7a7866!important;line-height:1.9!important;margin-top:10px!important}.howGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.how{border:1px solid var(--line);border-radius:12px;padding:19px;background:#fffdf555}.how .number{font-family:var(--serif);font-size:30px;color:#a6b5a1}.how h2{font-size:13px;margin:8px 0}.how p{font-size:11px;color:var(--muted);line-height:2;margin:0}.key{display:inline-block;padding:0 6px;border:1px solid #b8c9bc;border-radius:4px;font-size:10px;background:#fffdf7}.privacy{font-size:11px;line-height:1.9;color:var(--muted);margin:20px 0 0}details{font-size:11px;line-height:1.9;color:var(--muted);margin-top:15px}summary{cursor:pointer;min-height:44px;padding-top:11px}.divider{height:1px;background:var(--line);margin:13px 0}.tag{font-size:9px;padding:3px 6px;background:#e3ece1;border-radius:4px;color:#487063;white-space:nowrap}.cameraButtons{display:flex;gap:8px}.cameraButtons button{flex:1}.insetStatus{font-size:11px;line-height:1.9;margin:10px 0 0;color:var(--muted)}
+@media(max-width:760px){dialog{width:calc(100% - 24px);max-height:calc(100dvh - 24px);border-radius:16px}.panelHead{padding:22px 22px 17px}h1{font-size:25px;padding-right:25px}h1 small{display:block;font-size:11px;margin-top:3px}.eyebrow{font-size:9px}.intro{font-size:11px}.close{right:12px;top:15px;width:44px;height:44px}.tabs{padding:0 22px;gap:22px}.tabs button{font-size:11px}.tabContent{padding:22px;min-height:0}.playGrid{grid-template-columns:1.1fr 1fr;gap:20px}.poem{font-size:18px}.hint{font-size:11px}.stageCard canvas{height:70px}.stageCard .stageText{padding:7px 9px;gap:6px}.stageCard strong{font-size:15px}.stageCard small{font-size:9px}.panelFoot{padding:16px 22px;gap:12px}.panelFoot .footNote{font-size:9px}.primary{font-size:12px;padding:11px 17px;gap:15px}.controlsGrid{gap:15px}.settingBlock{padding:15px}.howGrid{gap:10px}.how{padding:14px}}
+@media(max-width:530px){.eyebrow{font-size:8px;letter-spacing:.12em}.playGrid,.controlsGrid{grid-template-columns:1fr}.playGrid{gap:18px}.stageCard canvas{height:68px}.welcomeSide{border-top:1px solid var(--line);padding-top:15px}.poem{display:none}.hint{margin-bottom:12px}.status{margin-top:0}.panelFoot{position:sticky;bottom:0;flex-wrap:wrap;gap:9px;z-index:5}.panelFoot .footNote{display:none}.panelFoot .primary{width:100%;min-height:50px}.howGrid{grid-template-columns:1fr}.how .number{float:left;margin-right:15px;font-size:25px}.how h2{margin-top:0}.tabContent{padding:20px}.tabs{gap:20px;padding:0 20px}.tabs button{padding-top:14px}#playControls{right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));gap:8px}#playControls button{width:48px;height:48px}h1{font-size:24px}.panelHead{padding:20px}.intro{max-width:260px}.cameraStart{min-height:44px}.sectionLabel{margin-bottom:9px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="scene" tabindex="0" aria-label="オホーツクの四季。画面に触れたり、ドラッグしたりして遊べます。スペースまたはエンターでチョイナ！" role="img"></canvas>
+<video id="cameraVideo" autoplay muted playsinline aria-hidden="true"></video>
+<div id="playControls" aria-label="あそびの操作">
+ <button id="actionButton" type="button" aria-label="チョイナ！ アクション（スペースまたはエンター）" title="チョイナ！">👏</button>
+ <button id="stageButton" type="button" aria-label="次の季節へ：夏" title="季節をかえる">🦭</button>
+ <button id="settingsButton" type="button" aria-label="先生・支援者用コントロールパネルを開く" title="先生用設定"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 3-1 3-3 1-2 4 2 2 1 4 3 1 2 3 4-1 1-3 3-1 2-4-2-2-1-4-3-1-2-3z"/><circle cx="12" cy="12" r="3.3"/></svg></button>
+</div>
+<div id="liveStatus" role="status" aria-live="polite"></div>
+<dialog id="settings" aria-labelledby="panelTitle">
+ <header class="panelHead">
+  <div class="eyebrow">OKHOTSK NATURE PLAY · TEACHER'S ROOM</div>
+  <h1 id="panelTitle">オホーツク 四季の詩 <small>× 網走流氷音頭</small></h1>
+  <p class="intro">小さな動きが、自然を彩る。からだで奏でる、網走の四季。</p>
+  <button class="close" id="closePanel" type="button" aria-label="設定を閉じてあそびの画面へ">×</button>
+ </header>
+ <nav class="tabs" role="tablist" aria-label="先生・支援者用の設定">
+  <button role="tab" id="tab-play" aria-selected="true" aria-controls="pane-play" data-tab="play">四季のあそび</button>
+  <button role="tab" id="tab-body" aria-selected="false" aria-controls="pane-body" tabindex="-1" data-tab="body">からだ・カメラ</button>
+  <button role="tab" id="tab-sound" aria-selected="false" aria-controls="pane-sound" tabindex="-1" data-tab="sound">音とリズム</button>
+  <button role="tab" id="tab-guide" aria-selected="false" aria-controls="pane-guide" tabindex="-1" data-tab="guide">つかいかた</button>
+ </nav>
+ <section class="tabContent" id="pane-play" role="tabpanel" aria-labelledby="tab-play">
+  <div class="playGrid">
+   <div><p class="sectionLabel">01 / 季節をえらぶ <span>冬 → 夏 → 秋 → 春</span></p>
+    <div class="stages">
+     <button type="button" class="stageCard" data-stage="0" aria-pressed="true" aria-label="冬：流氷とアザラシ"><canvas data-thumb="0" aria-hidden="true"></canvas><div class="stageText"><strong>冬</strong><small>流氷とアザラシ</small></div></button>
+     <button type="button" class="stageCard" data-stage="1" aria-pressed="false" aria-label="夏：網走湖の花火"><canvas data-thumb="1" aria-hidden="true"></canvas><div class="stageText"><strong>夏</strong><small>網走湖の花火</small></div></button>
+     <button type="button" class="stageCard" data-stage="2" aria-pressed="false" aria-label="秋：能取湖のサンゴ草と網走ガニ"><canvas data-thumb="2" aria-hidden="true"></canvas><div class="stageText"><strong>秋</strong><small>能取湖のサンゴ草</small></div></button>
+     <button type="button" class="stageCard" data-stage="3" aria-pressed="false" aria-label="春から初夏：大曲湖畔園地のひまわりと東藻琴の芝桜"><canvas data-thumb="3" aria-hidden="true"></canvas><div class="stageText"><strong>春</strong><small>大曲・東藻琴の花</small></div></button>
+    </div>
+   </div>
+   <div class="welcomeSide"><p class="sectionLabel">02 / あそびの準備 <span>先生・支援者用</span></p>
+    <p class="poem">手をのばす。<br>こころが、ほどける。</p>
+    <p class="hint" id="stageHint">流氷をそっとかき分けて。<br>アザラシに触れると、うれしいお返事。</p>
+    <button class="secondary cameraStart" id="welcomeCamera" type="button"><span>◎ インカメラをつかう</span><span aria-hidden="true">↗</span></button>
+    <div class="status" id="cameraStatus" data-state="idle"><span>カメラなしでも、タッチですぐに遊べます。</span></div>
+   </div>
+  </div>
+ </section>
+ <section class="tabContent" id="pane-body" role="tabpanel" aria-labelledby="tab-body" hidden>
+  <div class="controlsGrid">
+   <div><div class="settingBlock"><h2>反応するからだ</h2><p>お子さんが使いやすい部位を選んでください。</p>
+    <div class="row"><label for="hands">👋 手・腕</label><input class="switch" id="hands" type="checkbox" checked></div>
+    <div class="row"><label for="head">🙂 顔・あたま</label><input class="switch" id="head" type="checkbox"></div>
+    <div class="row"><label for="feet">🦶 足・ステップ</label><input class="switch" id="feet" type="checkbox" checked></div>
+    <label class="fieldLabel" for="reach">手が届く範囲</label><select id="reach"><option value="1">標準 · 1.0倍</option><option value="1.5" selected>広め · 1.5倍（推奨）</option><option value="2.2">最大 · 2.2倍</option></select>
+    <label class="fieldLabel" for="sensitivity">小さな動きへの感度 <output id="sensitivityValue">標準</output></label><input id="sensitivity" class="range" type="range" min="0.5" max="2" step="0.1" value="1" aria-label="小さな動きへの感度。高いほど小さな動きに反応">
+   </div></div>
+   <div><div class="settingBlock"><h2>映りかたと動き</h2><p>顔の位置を避け、景色は画面の端と足もとに。</p>
+    <label class="fieldLabel" for="cameraOpacity">カメラ映像（鏡にうつる向き）</label><select id="cameraOpacity"><option value="0.68" selected>姿がはっきり映る · 68%</option><option value="0.28">水面のように淡く · 28%</option><option value="0">映さない（動きには反応）</option></select>
+    <div class="row"><label for="motion">動いたときだけ反応 <span class="tag">推奨</span></label><input id="motion" class="switch" type="checkbox" checked></div>
+    <div class="row"><label for="gentle">やさしい感覚モード</label><input id="gentle" class="switch" type="checkbox" checked></div>
+    <div class="row"><label for="paused">景色の動きを一時停止</label><input id="paused" class="switch" type="checkbox"></div>
+    <div class="divider"></div><div class="cameraButtons"><button type="button" class="secondary" id="startCamera">カメラを開始</button><button type="button" class="secondary" id="stopCamera">カメラを終了</button></div>
+    <p class="insetStatus" id="cameraDetail">タッチ・マウス・外部スイッチはいつでも使えます。</p>
+   </div></div>
+  </div>
+ </section>
+ <section class="tabContent" id="pane-sound" role="tabpanel" aria-labelledby="tab-sound" hidden>
+  <div class="controlsGrid">
+   <div class="settingBlock"><h2>網走流氷音頭とあそぶ</h2><p>お手持ちの曲を読み込むと、低音に合わせて<br>アザラシや灯りがゆれます。曲はくり返し再生します。</p>
+    <label class="fileLabel" for="audioFile">♫ 音源ファイルをえらぶ<input id="audioFile" type="file" accept="audio/*"></label>
+    <div class="trackName" id="trackName" role="status">音源はまだ読み込まれていません</div>
+    <div class="inlineButtons"><button type="button" id="trackPlay" class="secondary">再生</button><button type="button" id="trackClear" class="secondary">音源を解除</button></div>
+    <p class="note">音源は端末内で再生し、アップロードしません。<br>やさしいモードでも、録音された強い音は残ります。まず小さな音量で確認してください。</p>
+   </div>
+   <div class="settingBlock"><h2>お囃子と、やさしい音</h2><p>曲がなくても、太鼓・拍子木・笛の合成音で。<br>内蔵お囃子はオリジナルのリズムです。</p>
+    <div class="row"><label for="synth">内蔵お囃子を演奏</label><input id="synth" class="switch" type="checkbox"></div>
+    <div class="row"><label for="soundEffects">動きに合わせた効果音</label><input id="soundEffects" class="switch" type="checkbox" checked></div>
+    <label class="fieldLabel" for="volume">全体の音量 <output id="volumeValue">35%</output></label><input class="range" id="volume" type="range" min="0" max="1" value="0.35" step="0.01">
+    <button type="button" class="secondary" id="testSound" style="width:100%;margin-top:10px">♪ チョイナ！の音をためす</button>
+    <p class="insetStatus" id="audioStatus" role="status">音は、操作したあとに鳴りはじめます。</p>
+   </div>
+  </div>
+ </section>
+ <section class="tabContent" id="pane-guide" role="tabpanel" aria-labelledby="tab-guide" hidden>
+  <div class="howGrid">
+   <article class="how"><span class="number">01</span><h2>画面を大きく</h2><p>iPadを横向きに置き、AirPlayや映像ケーブルで投影。画面右下の⚙から、いつでも設定へ戻れます。</p><button class="textButton" id="fullscreen" type="button">全画面表示にする ↗</button></article>
+   <article class="how"><span class="number">02</span><h2>その子の動きで</h2><p>カメラは全身や使う部位が入る位置に。最初は手を小さく動かして反応を確認。「からだ・カメラ」で範囲と感度を調整できます。</p></article>
+   <article class="how"><span class="number">03</span><h2>みんなでチョイナ！</h2><p>両手を合わせる・ダブルタップ・右下の👏でお返事。外部スイッチは <span class="key">Space</span> / <span class="key">Enter</span> に設定してください。</p></article>
+  </div>
+  <p class="privacy">カメラ映像・身体の位置はブラウザ内で処理し、保存・送信しません。設定だけをこの端末に記憶します。音源ファイル・カメラの許可状態は保存しません。</p>
+  <details><summary>カメラが使えないとき・HTMLの開きかた</summary><p>HTMLを直接開いてカメラが動かない場合は、HTTPSで配信したページ、またはPCのlocalhostで開いてください。iPadの「ファイル」アプリのプレビューでは動かない場合があります。Safariで開き、カメラの使用を許可してください。身体認識ライブラリ・書体の読み込みにはインターネット接続が必要です。カメラや身体認識が利用できなくても、タッチ・マウス・外部スイッチで四季すべてを遊べます。映像を外部サーバーへ送る機能はありません。</p></details>
+ </section>
+ <footer class="panelFoot"><div class="footNote">先生・支援者用コントロールパネル<br>音量と投影の明るさを、お子さんに合わせて。</div><button class="primary" type="button" id="returnPlay"><span>あそびの画面（投影）へ戻る</span><span aria-hidden="true">→</span></button></footer>
+</dialog>
+<!-- Inline audio, pose and scene modules. No image assets or build process required. -->
+<script>
+/* Local-only audio. The built-in accompaniment is an original pentatonic pattern,
+   not a recording or reconstruction of Abashiri Ryuhyo Ondo. */
+(() => {
+  'use strict';
+  const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
+
+  class NatureAudio {
+    constructor({ onStatus, onTrack, onBeat } = {}) {
+      this._onStatus = typeof onStatus === 'function' ? onStatus : () => {};
+      this._onTrack = typeof onTrack === 'function' ? onTrack : () => {};
+      this._onBeat = typeof onBeat === 'function' ? onBeat : () => {};
+      this._ctx = null;
+      this._master = null;
+      this._synthBus = null;
+      this._cueBus = null;
+      this._trackBus = null;
+      this._analyser = null;
+      this._bins = null;
+      this._source = null;
+      this._synthOn = false;
+      this._volume = 0.35;
+      this._gentle = false;
+      this._trackLoaded = false;
+      this._trackPlaying = false;
+      this._fileName = '';
+      this._blobURL = null;
+      this._loadId = 0;
+      this._playId = 0;
+      this._timer = null;
+      this._nextNoteTime = 0;
+      this._step = 0;
+      this._voices = new Set();
+      this._beat = 0;
+      this._beatFloor = 0;
+      this._lastBeatTime = -100;
+      this._lastUpdate = 0;
+      this._beatQueue = [];
+      this._lastCue = new Map();
+      this._resumeTrack = false;
+      this._audio = document.createElement('audio');
+      this._audio.loop = true;
+      this._audio.preload = 'auto';
+      this._audio.playsInline = true;
+      this._audio.volume = this._volume * 0.8;
+      this._audio.setAttribute('playsinline', '');
+      this._audio.addEventListener('pause', () => {
+        if (this._trackPlaying) {
+          this._trackPlaying = false;
+          this._syncSynth();
+          this._emit();
+        }
+      });
+      this._audio.addEventListener('error', () => {
+        if (this._trackLoaded && this._audio.error) {
+          this._trackPlaying = false;
+          this._resumeTrack = false;
+          this._status('この音源は再生できません。別の MP3・WAV・M4A を選んでください。');
+          this._syncSynth();
+          this._emit();
+        }
+      });
+      this._visibilityHandler = () => this._visibilityChanged();
+      document.addEventListener('visibilitychange', this._visibilityHandler);
+    }
+
+    get state() {
+      return {
+        synthOn: this._synthOn,
+        trackLoaded: this._trackLoaded,
+        trackPlaying: this._trackPlaying,
+        fileName: this._fileName,
+        volume: this._volume,
+        gentle: this._gentle
+      };
+    }
+
+    _status(message) { this._onStatus(message); }
+    _emit() { this._onTrack(this.state); }
+
+    _ensureGraph() {
+      if (this._ctx) return true;
+      const Context = window.AudioContext || window.webkitAudioContext;
+      if (!Context) {
+        this._status('内蔵お囃子はこのブラウザーでは使えません。音源ファイルは再生できます。');
+        return false;
+      }
+      try {
+        const ctx = this._ctx = new Context();
+        this._master = ctx.createGain();
+        const compressor = ctx.createDynamicsCompressor();
+        compressor.threshold.value = -18;
+        compressor.knee.value = 18;
+        compressor.ratio.value = 5;
+        compressor.attack.value = 0.008;
+        compressor.release.value = 0.25;
+        const tone = this._tone = ctx.createBiquadFilter();
+        tone.type = 'lowpass';
+        tone.frequency.value = this._gentle ? 2400 : 11000;
+        tone.Q.value = 0.3;
+        this._synthBus = ctx.createGain();
+        this._cueBus = ctx.createGain();
+        this._trackBus = ctx.createGain();
+        this._synthBus.connect(tone);
+        this._cueBus.connect(tone);
+        this._trackBus.connect(tone);
+        tone.connect(compressor);
+        compressor.connect(this._master);
+        this._master.connect(ctx.destination);
+        this._analyser = ctx.createAnalyser();
+        this._analyser.fftSize = 1024;
+        this._analyser.smoothingTimeConstant = 0.65;
+        this._bins = new Uint8Array(this._analyser.frequencyBinCount);
+        this._source = ctx.createMediaElementSource(this._audio);
+        this._source.connect(this._analyser);
+        this._analyser.connect(this._trackBus);
+        this._audio.volume = 1;
+        this._setLevels(true);
+        ctx.addEventListener('statechange', () => {
+          if (ctx.state === 'running') this._syncSynth();
+          else this._stopScheduler();
+        });
+        return true;
+      } catch (error) {
+        this._status('音声を準備できませんでした。Safari・Chrome の最新環境でお試しください。');
+        return false;
+      }
+    }
+
+    async unlock() {
+      if (!this._ensureGraph()) return false;
+      try {
+        if (this._ctx.state !== 'running') await this._ctx.resume();
+        this._syncSynth();
+        return this._ctx.state === 'running';
+      } catch (error) {
+        this._status('音を有効にするには、もう一度再生ボタンを押してください。');
+        return false;
+      }
+    }
+
+    _setLevels(immediate = false) {
+      if (this._ctx && this._master) {
+        const time = this._ctx.currentTime;
+        const level = this._volume * (this._gentle ? 0.42 : 0.8);
+        this._master.gain.cancelScheduledValues(time);
+        if (immediate) this._master.gain.setValueAtTime(level, time);
+        else this._master.gain.setTargetAtTime(level, time, 0.08);
+        this._tone.frequency.setTargetAtTime(this._gentle ? 2400 : 11000, time, 0.1);
+      } else {
+        this._audio.volume = this._volume * (this._gentle ? 0.35 : 0.8);
+      }
+    }
+
+    setGentle(value) {
+      this._gentle = Boolean(value);
+      this._setLevels();
+      if (this._ctx && this._gentle) {
+        this._stopVoices();
+        this._nextNoteTime = this._ctx.currentTime + 0.08;
+        this._beatQueue.length = 0;
+      }
+      this._emit();
+    }
+
+    setVolume(value) {
+      const number = Number(value);
+      this._volume = Number.isFinite(number) ? clamp(number, 0, 1) : 0.35;
+      this._setLevels();
+      this._emit();
+    }
+
+    async setSynth(value) {
+      this._synthOn = Boolean(value);
+      if (this._synthOn) {
+        const ready = await this.unlock();
+        if (!ready) this._synthOn = false;
+      }
+      this._syncSynth();
+      this._emit();
+      return this._synthOn;
+    }
+
+    async loadFile(file) {
+      if (!file || !file.size) {
+        this._status('音源ファイルを選んでください。');
+        return false;
+      }
+      const id = ++this._loadId;
+      this.pauseTrack();
+      this._releaseTrack();
+      this._fileName = file.name || '読み込んだ音源';
+      this._blobURL = URL.createObjectURL(file);
+      this._audio.src = this._blobURL;
+      this._status('音源を読み込んでいます…');
+      return new Promise(resolve => {
+        let done = false;
+        const finish = success => {
+          if (done) return;
+          done = true;
+          clearTimeout(timeout);
+          this._audio.removeEventListener('loadedmetadata', loaded);
+          this._audio.removeEventListener('canplay', loaded);
+          this._audio.removeEventListener('error', failed);
+          if (id !== this._loadId) { resolve(false); return; }
+          this._trackLoaded = success;
+          if (success) this._status('音源を読み込みました。再生ボタンで始めます。');
+          else {
+            this._releaseTrack();
+            this._status('この音源は読み込めません。別の MP3・WAV・M4A を選んでください。');
+          }
+          this._emit();
+          resolve(success);
+        };
+        const loaded = () => finish(true);
+        const failed = () => finish(false);
+        const timeout = setTimeout(() => finish(this._audio.readyState >= 1), 12000);
+        this._audio.addEventListener('loadedmetadata', loaded);
+        this._audio.addEventListener('canplay', loaded);
+        this._audio.addEventListener('error', failed);
+        this._audio.load();
+      });
+    }
+
+    async playTrack() {
+      if (!this._trackLoaded) {
+        this._status('先生用パネルから音源ファイルを選んでください。');
+        return false;
+      }
+      const id = ++this._playId;
+      this._trackPlaying = true;
+      this._beatFloor = 0;
+      this._syncSynth();
+      // resume() and play() are invoked within the same user gesture on iPad.
+      const unlocking = this.unlock();
+      try {
+        const playing = this._audio.play();
+        await Promise.all([unlocking, playing]);
+        if (id !== this._playId) return false;
+        this._trackPlaying = !this._audio.paused;
+        this._resumeTrack = false;
+        this._syncSynth();
+        this._status('音源をループ再生しています。');
+        this._emit();
+        return this._trackPlaying;
+      } catch (error) {
+        if (id !== this._playId) return false;
+        this._trackPlaying = false;
+        this._status('再生を始められませんでした。再生ボタンをもう一度押してください。');
+        this._syncSynth();
+        this._emit();
+        return false;
+      }
+    }
+
+    pauseTrack() {
+      this._playId++;
+      this._resumeTrack = false;
+      this._trackPlaying = false;
+      this._audio.pause();
+      this._syncSynth();
+      this._emit();
+    }
+
+    _releaseTrack() {
+      this._audio.removeAttribute('src');
+      this._audio.load();
+      if (this._blobURL) URL.revokeObjectURL(this._blobURL);
+      this._blobURL = null;
+      this._trackLoaded = false;
+      this._trackPlaying = false;
+      this._fileName = '';
+      this._beatFloor = 0;
+    }
+
+    clearTrack() {
+      this._loadId++;
+      this.pauseTrack();
+      this._releaseTrack();
+      this._status('音源を解除しました。');
+      this._emit();
+    }
+
+    _syncSynth() {
+      const canPlay = this._ctx && this._ctx.state === 'running' &&
+        this._synthOn && !this._trackPlaying && !document.hidden;
+      if (!canPlay) {
+        this._stopScheduler();
+        return;
+      }
+      if (this._timer) return;
+      this._nextNoteTime = this._ctx.currentTime + 0.07;
+      this._step = 0;
+      this._timer = setInterval(() => this._schedule(), 25);
+      this._schedule();
+    }
+
+    _stopScheduler() {
+      if (this._timer) clearInterval(this._timer);
+      this._timer = null;
+      this._beatQueue.length = 0;
+      this._stopVoices('synth');
+    }
+
+    _stopVoices(group) {
+      if (!this._ctx) return;
+      const time = this._ctx.currentTime;
+      for (const voice of this._voices) {
+        if (group && voice.group !== group) continue;
+        try {
+          voice.gain.gain.cancelScheduledValues(time);
+          voice.gain.gain.setTargetAtTime(0, time, 0.025);
+          voice.source.stop(time + 0.12);
+        } catch (error) { /* Already-ended sources are safe to ignore. */ }
+      }
+    }
+
+    _schedule() {
+      if (!this._ctx || this._ctx.state !== 'running' || document.hidden) return;
+      const now = this._ctx.currentTime;
+      if (this._nextNoteTime < now - 0.2) this._nextNoteTime = now + 0.04;
+      const melody = [587.33, 698.46, 783.99, 880, 1046.5, 880, 783.99, 698.46];
+      while (this._nextNoteTime < now + 0.12) {
+        const time = this._nextNoteTime;
+        const step = this._step % 16;
+        if (step % 8 === 0 || step % 8 === 2) {
+          this._drum(time, step % 8 === 0 ? 0.43 : 0.29, 'synth');
+          this._beatQueue.push({ time, strength: step % 8 === 0 ? 0.8 : 0.55 });
+        } else if (step % 8 === 4) {
+          if (this._gentle) this._chime(time, 783.99, 0.13, 'synth');
+          else this._wood(time, 0.17, 'synth', 1150);
+          this._beatQueue.push({ time, strength: 0.65 });
+        } else if (step % 8 === 7) {
+          if (this._gentle) this._chime(time, 1174.66, 0.06, 'synth');
+          else this._wood(time, 0.09, 'synth', 1550);
+        }
+        if (step % 2 === 0) this._flute(time + 0.015, melody[step / 2], 0.46, 0.085);
+        this._step++;
+        this._nextNoteTime += 60 / 96 / 2;
+      }
+    }
+
+    _voice(source, gain, group, endTime, extraNodes = []) {
+      const voice = { source, gain, group };
+      this._voices.add(voice);
+      source.onended = () => {
+        this._voices.delete(voice);
+        source.disconnect();
+        gain.disconnect();
+        for (const node of extraNodes) node.disconnect();
+      };
+      source.stop(endTime);
+    }
+
+    _connectGain(gain, group) {
+      gain.connect(group === 'synth' ? this._synthBus : this._cueBus);
+    }
+
+    _drum(time, strength = 0.4, group = 'cue') {
+      if (this._gentle) {
+        this._chime(time, 392, strength * 0.45, group);
+        return;
+      }
+      const ctx = this._ctx;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(138, time);
+      osc.frequency.exponentialRampToValueAtTime(56, time + 0.16);
+      gain.gain.setValueAtTime(0.0001, time);
+      gain.gain.exponentialRampToValueAtTime(strength, time + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.48);
+      osc.connect(gain);
+      this._connectGain(gain, group);
+      osc.start(time);
+      this._voice(osc, gain, group, time + 0.52);
+    }
+
+    _wood(time, strength = 0.15, group = 'cue', pitch = 1350) {
+      if (this._gentle) {
+        this._chime(time, pitch * 0.5, strength * 0.65, group);
+        return;
+      }
+      const ctx = this._ctx;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = pitch;
+      filter.Q.value = 1.2;
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(pitch, time);
+      osc.frequency.exponentialRampToValueAtTime(pitch * 0.75, time + 0.045);
+      gain.gain.setValueAtTime(0.0001, time);
+      gain.gain.exponentialRampToValueAtTime(strength, time + 0.003);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.12);
+      osc.connect(filter);
+      filter.connect(gain);
+      this._connectGain(gain, group);
+      osc.start(time);
+      this._voice(osc, gain, group, time + 0.14, [filter]);
+    }
+
+    _chime(time, frequency = 783.99, strength = 0.12, group = 'cue') {
+      const ctx = this._ctx;
+      for (const [ratio, attenuation] of [[1, 1], [2, 0.22], [3, 0.06]]) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = frequency * ratio;
+        gain.gain.setValueAtTime(0.0001, time);
+        gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, strength * attenuation), time + 0.035);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.9);
+        osc.connect(gain);
+        this._connectGain(gain, group);
+        osc.start(time);
+        this._voice(osc, gain, group, time + 0.95);
+      }
+    }
+
+    _flute(time, frequency, duration, strength) {
+      const ctx = this._ctx;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(frequency, time);
+      osc.frequency.linearRampToValueAtTime(frequency * 1.003, time + duration * 0.6);
+      gain.gain.setValueAtTime(0.0001, time);
+      gain.gain.exponentialRampToValueAtTime(strength * (this._gentle ? 0.7 : 1), time + 0.065);
+      gain.gain.setValueAtTime(strength * 0.65, time + duration * 0.65);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+      osc.connect(gain);
+      this._connectGain(gain, 'synth');
+      osc.start(time);
+      this._voice(osc, gain, 'synth', time + duration + 0.03);
+    }
+
+    async cue(kind = 'action') {
+      if (document.hidden || this._volume === 0) return;
+      const now = performance.now();
+      const minimum = kind === 'action' || kind === 'clap' ? 450 : 180;
+      if (now - (this._lastCue.get(kind) ?? -10000) < minimum) return;
+      this._lastCue.set(kind, now);
+      if (!await this.unlock()) return;
+      if (document.hidden) return;
+      const time = this._ctx.currentTime + 0.01;
+      if (this._gentle) {
+        this._chime(time, kind === 'firework' ? 587.33 : 783.99, 0.17);
+        if (kind === 'action' || kind === 'clap') this._chime(time + 0.15, 1046.5, 0.09);
+      } else if (kind === 'action' || kind === 'clap') {
+        this._drum(time, 0.4);
+        this._wood(time + 0.025, 0.18);
+        this._wood(time + 0.12, 0.1, 'cue', 1700);
+      } else if (kind === 'firework') {
+        this._drum(time, 0.24);
+        this._chime(time + 0.06, 587.33, 0.12);
+        this._chime(time + 0.13, 880, 0.08);
+      } else {
+        this._chime(time, kind === 'flower' ? 1046.5 : 783.99, 0.085);
+      }
+      this._beat = Math.max(this._beat, kind === 'action' || kind === 'clap' ? 0.9 : 0.4);
+    }
+
+    update(timeSeconds) {
+      const time = Number.isFinite(timeSeconds) ? timeSeconds : performance.now() / 1000;
+      const dt = this._lastUpdate ? clamp(time - this._lastUpdate, 0.001, 0.1) : 1 / 60;
+      this._lastUpdate = time;
+      this._beat *= Math.exp(-dt * 5.5);
+      if (!this._ctx || this._ctx.state !== 'running' || document.hidden) return this._beat;
+      const now = this._ctx.currentTime;
+      while (this._beatQueue.length && this._beatQueue[0].time <= now) {
+        const beat = this._beatQueue.shift();
+        if (now - beat.time < 0.2) {
+          this._beat = Math.max(this._beat, beat.strength);
+          this._onBeat(beat.strength);
+        }
+      }
+      if (this._trackPlaying && this._analyser) {
+        this._analyser.getByteFrequencyData(this._bins);
+        const hzPerBin = this._ctx.sampleRate / this._analyser.fftSize;
+        const low = Math.max(1, Math.floor(40 / hzPerBin));
+        const high = Math.min(this._bins.length - 1, Math.ceil(220 / hzPerBin));
+        let energy = 0;
+        for (let i = low; i <= high; i++) energy += this._bins[i] / 255;
+        energy /= Math.max(1, high - low + 1);
+        this._beatFloor += (energy - this._beatFloor) * Math.min(1, dt * 1.8);
+        const onset = energy - this._beatFloor;
+        if (energy > 0.12 && onset > 0.045 && now - this._lastBeatTime > 0.24) {
+          this._lastBeatTime = now;
+          const strength = clamp(onset * 4 + energy * 0.3, 0.25, 1);
+          this._beat = Math.max(this._beat, strength);
+          this._onBeat(strength);
+        }
+      }
+      return clamp(this._beat, 0, 1);
+    }
+
+    _visibilityChanged() {
+      if (document.hidden) {
+        this._stopScheduler();
+        this._stopVoices();
+        this._resumeTrack = this._trackPlaying;
+        this._trackPlaying = false;
+        this._audio.pause();
+        this._beat = 0;
+        this._emit();
+      } else if (this._resumeTrack && this._trackLoaded) {
+        this.playTrack();
+      } else if (this._synthOn) {
+        this.unlock();
+      }
+    }
+
+    destroy() {
+      this._synthOn = false;
+      this._loadId++;
+      this._stopScheduler();
+      this._stopVoices();
+      this.pauseTrack();
+      this._releaseTrack();
+      document.removeEventListener('visibilitychange', this._visibilityHandler);
+      if (this._ctx && this._ctx.state !== 'closed') this._ctx.close().catch(() => {});
+    }
+  }
+
+  window.NatureAudio = NatureAudio;
+})();
+
+</script>
+<script>
+/* Lazy, local-only camera and MediaPipe Pose controller. The video is never uploaded. */
+(() => {
+  'use strict';
+  const POSE_CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/';
+  const CAMERA_CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js';
+  const scriptPromises = new Map();
+  const noop = () => {};
+  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+  const now = () => performance.now();
+
+  function deadline(promise, milliseconds, message) {
+    let timeout;
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => { timeout = setTimeout(() => reject(new Error(message)), milliseconds); })
+    ]).finally(() => clearTimeout(timeout));
+  }
+
+  function loadScript(url, globalName) {
+    if (typeof window[globalName] === 'function') return Promise.resolve();
+    if (scriptPromises.has(url)) return scriptPromises.get(url);
+    const promise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      let timer;
+      const finish = (error) => {
+        clearTimeout(timer);
+        script.onload = script.onerror = null;
+        if (error) { script.remove(); reject(error); }
+        else resolve();
+      };
+      script.src = url;
+      script.async = true;
+      script.crossOrigin = 'anonymous';
+      script.referrerPolicy = 'no-referrer';
+      script.onload = () => finish(typeof window[globalName] === 'function' ? null : new Error('カメラ認識ライブラリを利用できませんでした。'));
+      script.onerror = () => finish(new Error('カメラ認識の読み込みに失敗しました。インターネット接続を確認してください。'));
+      timer = setTimeout(() => finish(new Error('カメラ認識の読み込みが時間内に終わりませんでした。')), 15000);
+      document.head.appendChild(script);
+    });
+    scriptPromises.set(url, promise);
+    promise.catch(() => scriptPromises.delete(url));
+    return promise;
+  }
+
+  function cameraMessage(error) {
+    const name = error && error.name;
+    if (name === 'NotAllowedError' || name === 'PermissionDeniedError') return 'カメラが許可されていません。タッチ・マウス・スイッチであそべます。';
+    if (name === 'NotFoundError' || name === 'DevicesNotFoundError') return 'カメラが見つかりません。タッチ・マウス・スイッチであそべます。';
+    if (name === 'NotReadableError' || name === 'TrackStartError') return 'カメラを使用できません。他のアプリを閉じるか、タッチであそんでください。';
+    if (name === 'SecurityError') return 'カメラを利用できない環境です。HTTPSで開くか、タッチであそんでください。';
+    return (error && error.message ? error.message + ' ' : '') + 'タッチ・マウス・スイッチであそべます。';
+  }
+
+  class NaturePose {
+    constructor({ video, onStatus = noop, onPoints = noop, onClap = noop } = {}) {
+      this.video = video || document.createElement('video');
+      this.video.muted = true;
+      this.video.autoplay = true;
+      this.video.playsInline = true;
+      this.video.setAttribute('playsinline', '');
+      this.video.setAttribute('webkit-playsinline', '');
+      this.video.setAttribute('muted', '');
+      this.onStatus = onStatus;
+      this.onPoints = onPoints;
+      this.onClap = onClap;
+      this.options = { hands: true, head: false, feet: true, reach: 1.5, motion: true, sensitivity: 1, width: innerWidth, height: innerHeight };
+      this._state = 'idle';
+      this._generation = 0;
+      this._stream = null;
+      this._pose = null;
+      this._startPromise = null;
+      this._pendingModel = null;
+      this._sendPromise = null;
+      this._history = new Map();
+      this._raf = 0;
+      this._suspended = false;
+      this._pausedForVisibility = document.hidden;
+      this._inferenceEnabled = false;
+      this._busy = false;
+      this._lastSent = -Infinity;
+      this._lastVideoTime = -1;
+      this._resetClap();
+      this._visibilityHandler = () => {
+        this._pausedForVisibility = document.hidden;
+        this._cancelLoop();
+        this._clearPoints();
+        if (!document.hidden && this.active && !this._suspended) {
+          this.video.play().catch(noop);
+          this._schedule();
+        }
+      };
+      document.addEventListener('visibilitychange', this._visibilityHandler);
+    }
+
+    get active() { return this._state === 'active' && !!(this._stream && this._stream.active); }
+    get cameraReady() { return !!(this._stream && this._stream.active && this.video.readyState >= 2); }
+    get state() { return this._state; }
+
+    setOptions(next = {}) {
+      const previous = this.options;
+      const updated = { ...previous, ...next };
+      updated.width = Math.max(1, Number(updated.width) || innerWidth || 1);
+      updated.height = Math.max(1, Number(updated.height) || innerHeight || 1);
+      updated.reach = clamp(Number(updated.reach) || 1.5, 1, 2.2);
+      updated.sensitivity = clamp(Number(updated.sensitivity) || 1, 0.35, 3);
+      for (const key of ['hands', 'head', 'feet', 'motion']) updated[key] = !!updated[key];
+      this.options = updated;
+      if (['hands', 'head', 'feet', 'motion', 'sensitivity', 'width', 'height'].some(key => previous[key] !== updated[key])) this._clearPoints();
+    }
+
+    async start() {
+      if (this._startPromise) return this._startPromise;
+      if (this.active) { this.resume(); return true; }
+      this.stop(true);
+      const generation = ++this._generation;
+      this._suspended = false;
+      this._status('loading', 'カメラを準備しています…');
+      const boot = this._boot(generation);
+      this._startPromise = boot;
+      try { return await boot; }
+      finally { if (this._startPromise === boot) this._startPromise = null; }
+    }
+
+    async _boot(generation) {
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error('この環境ではカメラを利用できません。HTTPSまたはlocalhostで開いてください。');
+        }
+        if (window.isSecureContext === false) throw new Error('カメラを使うにはHTTPSで開いてください。');
+        const stream = await this._requestCamera(generation);
+        if (generation !== this._generation) { stream.getTracks().forEach(track => track.stop()); return false; }
+        this._stream = stream;
+        const track = stream.getVideoTracks()[0];
+        if (track) track.addEventListener('ended', () => {
+          if (generation === this._generation && this._stream === stream) this._fallback(new Error('カメラとの接続が切れました。'), generation, false);
+        }, { once: true });
+        this.video.srcObject = stream;
+        await Promise.all([this._waitForVideo(), deadline(Promise.resolve(this.video.play()), 10000, 'カメラ映像を開始できませんでした。')]);
+        if (generation !== this._generation) return false;
+        this._status('loading', '動きの認識を準備しています…（初回は少し時間がかかります）');
+        // Camera Utils is available for compatibility. Explicit stream ownership here
+        // makes permission fallback, switching and releasing every track reliable.
+        await Promise.all([
+          loadScript(POSE_CDN + 'pose.js', 'Pose'),
+          loadScript(CAMERA_CDN, 'Camera').catch(noop)
+        ]);
+        if (generation !== this._generation) return false;
+        const pose = new window.Pose({ locateFile: file => POSE_CDN + file });
+        this._pose = pose;
+        pose.setOptions({ modelComplexity: 0, smoothLandmarks: true, enableSegmentation: false, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6, selfieMode: false });
+        pose.onResults(results => {
+          if (generation === this._generation && pose === this._pose && this._inferenceEnabled && !this._suspended && !this._pausedForVisibility) this._results(results);
+        });
+        if (typeof pose.initialize === 'function') {
+          this._pendingModel = Promise.resolve(pose.initialize());
+          await deadline(this._pendingModel, 15000, '動き認識モデルの準備が時間内に終わりませんでした。');
+        }
+        if (generation !== this._generation) return false;
+        this._clearPoints();
+        this._inferenceEnabled = true;
+        this._status('active', 'カメラで動きを受けとっています。');
+        this._schedule();
+        return true;
+      } catch (error) {
+        if (generation === this._generation) this._fallback(error, generation, this.cameraReady);
+        return false;
+      }
+    }
+
+    async _requestCamera(generation) {
+      let expired = false;
+      const request = async constraints => {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: constraints });
+        if (expired || generation !== this._generation) {
+          stream.getTracks().forEach(track => track.stop());
+          throw new Error('カメラの開始が取り消されました。');
+        }
+        return stream;
+      };
+      const attempt = request({ facingMode: { ideal: 'user' }, width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 24, max: 30 } })
+        .catch(error => {
+          if (!expired && generation === this._generation && error && (error.name === 'OverconstrainedError' || error.name === 'ConstraintNotSatisfiedError')) return request(true);
+          throw error;
+        });
+      try { return await deadline(attempt, 25000, 'カメラの応答を待てませんでした。カメラの開始をもう一度試せます。'); }
+      finally { expired = true; }
+    }
+
+    _waitForVideo() {
+      if (this.video.readyState >= 2 && this.video.videoWidth) return Promise.resolve();
+      return new Promise((resolve, reject) => {
+        const events = ['loadedmetadata', 'loadeddata', 'canplay', 'resize'];
+        const cleanup = () => {
+          clearTimeout(timer);
+          events.forEach(event => this.video.removeEventListener(event, check));
+          this.video.removeEventListener('error', failed);
+        };
+        const check = () => {
+          if (this.video.readyState >= 2 && this.video.videoWidth) { cleanup(); resolve(); }
+        };
+        const failed = () => { cleanup(); reject(new Error('カメラ映像を読み込めませんでした。')); };
+        const timer = setTimeout(failed, 10000);
+        events.forEach(event => this.video.addEventListener(event, check));
+        this.video.addEventListener('error', failed);
+        check();
+      });
+    }
+
+    _status(state, message) {
+      this._state = state;
+      this.onStatus({ state, message });
+    }
+
+    _fallback(error, generation, keepVideo) {
+      if (generation !== this._generation) return;
+      this._inferenceEnabled = false;
+      this._cancelLoop();
+      this._clearPoints();
+      const pose = this._pose;
+      this._pose = null;
+      this._retirePose(pose);
+      if (!keepVideo) this._releaseCamera();
+      this._status('fallback', cameraMessage(error));
+    }
+
+    _schedule() {
+      if (this._raf || !this._inferenceEnabled || this._suspended || this._pausedForVisibility || !this.active) return;
+      this._raf = requestAnimationFrame(timestamp => this._tick(timestamp));
+    }
+
+    _tick(timestamp) {
+      this._raf = 0;
+      if (!this._inferenceEnabled || this._suspended || this._pausedForVisibility || !this.active) return;
+      this._schedule();
+      if (this._busy || timestamp - this._lastSent < 1000 / 18 || this.video.readyState < 2 || this.video.currentTime === this._lastVideoTime) return;
+      const pose = this._pose;
+      const generation = this._generation;
+      this._lastSent = timestamp;
+      this._lastVideoTime = this.video.currentTime;
+      this._busy = true;
+      let watchdog;
+      const send = Promise.resolve().then(() => pose.send({ image: this.video }));
+      this._sendPromise = send;
+      watchdog = setTimeout(() => {
+        if (generation === this._generation && this._pose === pose) this._fallback(new Error('動き認識の応答が止まりました。'), generation, true);
+      }, 12000);
+      send.catch(error => {
+        if (generation === this._generation && this._pose === pose) this._fallback(error, generation, true);
+      }).finally(() => {
+        clearTimeout(watchdog);
+        if (this._sendPromise === send) { this._sendPromise = null; this._busy = false; }
+      });
+    }
+
+    _map(landmark) {
+      const { width, height } = this.options;
+      const videoWidth = this.video.videoWidth || 640;
+      const videoHeight = this.video.videoHeight || 480;
+      const scale = Math.max(width / videoWidth, height / videoHeight);
+      return {
+        x: width - (landmark.x * videoWidth * scale - (videoWidth * scale - width) / 2),
+        y: landmark.y * videoHeight * scale - (videoHeight * scale - height) / 2
+      };
+    }
+
+    _results(results) {
+      const landmarks = results && results.poseLandmarks;
+      if (!landmarks || landmarks.length < 29) { this._clearPoints(); return; }
+      const timestamp = now();
+      const { width, height, hands, head, feet, motion, sensitivity } = this.options;
+      const minimumSize = Math.min(width, height);
+      const ids = [...(hands ? [15, 16, 19, 20] : []), ...(head ? [0] : []), ...(feet ? [27, 28] : [])];
+      const visible = new Set();
+      const points = [];
+      for (const id of ids) {
+        const landmark = landmarks[id];
+        if (!landmark || !Number.isFinite(landmark.x) || !Number.isFinite(landmark.y) || (landmark.visibility ?? 1) < (id === 0 ? 0.6 : 0.5)) continue;
+        const mapped = this._map(landmark);
+        if (mapped.x < 0 || mapped.x > width || mapped.y < 0 || mapped.y > height) continue;
+        visible.add(id);
+        let previous = this._history.get(id);
+        // A reacquired joint starts with zero velocity; no magic on appearance.
+        if (!previous || timestamp - previous.time > 350) {
+          previous = { x: mapped.x, y: mapped.y, time: timestamp, samples: [{ x: mapped.x, y: mapped.y, time: timestamp }] };
+          this._history.set(id, previous);
+          points.push({ id, x: mapped.x, y: mapped.y, vx: 0, vy: 0, speed: 0, active: false });
+          continue;
+        }
+        const dt = clamp((timestamp - previous.time) / 1000, 0.016, 0.35);
+        const alpha = 1 - Math.exp(-dt / 0.06);
+        const x = previous.x + (mapped.x - previous.x) * alpha;
+        const y = previous.y + (mapped.y - previous.y) * alpha;
+        previous.samples.push({ x, y, time: timestamp });
+        // Use displacement over a short window, rather than frame jitter.
+        while (previous.samples.length > 2 && timestamp - previous.samples[1].time > 180) previous.samples.shift();
+        const oldest = previous.samples[0];
+        const elapsed = Math.max(0.016, (timestamp - oldest.time) / 1000);
+        const dx = x - oldest.x;
+        const dy = y - oldest.y;
+        let vx = dx / elapsed;
+        let vy = dy / elapsed;
+        const displacement = Math.hypot(dx, dy);
+        let speed = Math.hypot(vx, vy);
+        const threshold = minimumSize * 0.018 / sensitivity;
+        const moving = speed >= threshold && displacement >= minimumSize * 0.0025 / sensitivity;
+        if (!moving) { vx = 0; vy = 0; speed = 0; }
+        previous.x = x;
+        previous.y = y;
+        previous.time = timestamp;
+        points.push({ id, x, y, vx, vy, speed, active: motion ? moving : true });
+      }
+      for (const id of this._history.keys()) if (!visible.has(id)) this._history.delete(id);
+      this._detectClap(points, landmarks, timestamp);
+      this.onPoints(points);
+    }
+
+    _detectClap(points, landmarks, timestamp) {
+      if (!this.options.hands) { this._resetClap(); return; }
+      const left = points.find(point => point.id === 15);
+      const right = points.find(point => point.id === 16);
+      if (!left || !right) { this._clapPrevDistance = null; this._clapArmed = false; return; }
+      const minimumSize = Math.min(this.options.width, this.options.height);
+      let shoulderSpan = minimumSize * 0.28;
+      if (landmarks[11] && landmarks[12]) {
+        const a = this._map(landmarks[11]);
+        const b = this._map(landmarks[12]);
+        shoulderSpan = Math.hypot(a.x - b.x, a.y - b.y);
+      }
+      const closeDistance = clamp(shoulderSpan * 0.38, minimumSize * 0.055, minimumSize * 0.14);
+      const distance = Math.hypot(left.x - right.x, left.y - right.y);
+      if (distance > closeDistance * 1.8) this._clapArmed = true;
+      const previousDistance = this._clapPrevDistance;
+      const closingVelocity = distance > 0 ? ((left.x - right.x) * (left.vx - right.vx) + (left.y - right.y) * (left.vy - right.vy)) / distance : -minimumSize;
+      const approaching = closingVelocity < -minimumSize * 0.045 || (previousDistance !== null && previousDistance - distance > minimumSize * 0.012);
+      if (this._clapArmed && previousDistance !== null && previousDistance >= closeDistance && distance < closeDistance && approaching && timestamp - this._lastClap > 1300) {
+        this._clapArmed = false;
+        this._lastClap = timestamp;
+        this.onClap({ x: (left.x + right.x) / 2, y: (left.y + right.y) / 2, source: 'pose' });
+      }
+      this._clapPrevDistance = distance;
+    }
+
+    _resetClap() { this._clapArmed = false; this._clapPrevDistance = null; this._lastClap = -Infinity; }
+    _clearPoints() { this._history.clear(); this._resetClap(); this.onPoints([]); }
+    _cancelLoop() { if (this._raf) cancelAnimationFrame(this._raf); this._raf = 0; }
+
+    suspend() { this._suspended = true; this._cancelLoop(); this._clearPoints(); }
+
+    resume() {
+      this._suspended = false;
+      this._clearPoints();
+      this._lastVideoTime = -1;
+      if (this.active) { this.video.play().catch(noop); this._schedule(); }
+    }
+
+    _releaseCamera() {
+      if (this._stream) this._stream.getTracks().forEach(track => track.stop());
+      this._stream = null;
+      this.video.pause();
+      this.video.srcObject = null;
+    }
+
+    _retirePose(pose) {
+      if (!pose || typeof pose.close !== 'function') return;
+      // Do not close a WASM graph while initialize/send is still using it.
+      Promise.allSettled([this._pendingModel, this._sendPromise].filter(Boolean))
+        .then(() => pose.close()).catch(noop);
+    }
+
+    stop(silent = false) {
+      ++this._generation;
+      this._inferenceEnabled = false;
+      this._cancelLoop();
+      this._clearPoints();
+      const pose = this._pose;
+      this._pose = null;
+      this._retirePose(pose);
+      this._pendingModel = null;
+      this._sendPromise = null;
+      this._startPromise = null;
+      this._busy = false;
+      this._lastSent = -Infinity;
+      this._lastVideoTime = -1;
+      this._releaseCamera();
+      if (!silent) this._status('idle', 'カメラを停止しました。タッチ・マウス・スイッチであそべます。');
+    }
+
+    destroy() { this.stop(true); document.removeEventListener('visibilitychange', this._visibilityHandler); }
+  }
+
+  window.NaturePose = NaturePose;
+})();
+
+</script>
+<script id="app">
+'use strict';
+(() => {
+const $=id=>document.getElementById(id),canvas=$('scene'),ctx=canvas.getContext('2d',{alpha:false}),video=$('cameraVideo'),dialog=$('settings');
+const TAU=Math.PI*2,rand=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
+const defaults={stage:0,hands:true,head:false,feet:true,reach:1.5,motion:true,sensitivity:1,gentle:true,cameraOpacity:.68,volume:.35,soundEffects:true};
+let saved={};try{saved=JSON.parse(localStorage.getItem('okhotsk-nature-v1')||'{}')}catch{}
+const cfg={...defaults,...Object.fromEntries(Object.entries(saved).filter(([k,v])=>k in defaults&&typeof v===typeof defaults[k]))};cfg.stage=clamp(Math.round(cfg.stage),0,3);cfg.reach=[1,1.5,2.2].includes(cfg.reach)?cfg.reach:1.5;cfg.volume=clamp(cfg.volume,0,1);cfg.sensitivity=clamp(cfg.sensitivity,.5,2);cfg.cameraOpacity=[0,.28,.68].includes(cfg.cameraOpacity)?cfg.cameraOpacity:.68;
+let lastPoseAt=0;
+let W=innerWidth,H=innerHeight,DPR=1,sceneTime=0,lastFrame=0,beat=0,posePoints=[],pointers=new Map(),ripples=[],sparks=[],flowers=[],butterflies=[],fireworks=[],shouts=[],ices=[],seals=[],crabs=[],targets=[],nextBloom=0,nextWave=0,lastAction=-10,lastTap=null,paused=false,previousFocus=null,globalDance=0,currentCameraState='idle',transition=0;
+const names=['冬 · 流氷とアザラシ','夏 · 網走湖の花火','秋 · サンゴ草とカニ','春 · 花とチョウ'];
+const hints=['流氷をそっとかき分けて。<br>アザラシに触れると、うれしいお返事。','光る花火玉へ、手をのばして。<br>網走湖の空と水面に、花がひらきます。','能取湖のサンゴ草に、カニがかくれんぼ。<br>手を動かすと、ハサミでチョイナ！','大曲湖畔のひまわり、東藻琴の芝桜。<br>手の軌跡に花がひらき、チョウが集まります。'];
+const themes=[['#a8d1d1','#e7e9d8','#78b3bd','#346c84'],['#102a43','#596b7d','#1c4b61','#113548'],['#c5cbb8','#e7d7b7','#9daea2','#4c7b80'],['#a2cec1','#e9e6c3','#9ebd81','#4a826e']];
+function persist(){try{localStorage.setItem('okhotsk-nature-v1',JSON.stringify(cfg))}catch{}}
+function announce(s){$('liveStatus').textContent=s}
+const audio=new NatureAudio({onStatus:s=>$('audioStatus').textContent=s,onTrack:syncTrack});audio.setGentle(cfg.gentle);audio.setVolume(cfg.volume);
+const pose=new NaturePose({video,onStatus:cameraStatus,onPoints:p=>{posePoints=p;lastPoseAt=performance.now()},onClap:()=>{if(!dialog.open&&!paused)action('clap')}});
+function syncPose(){pose.setOptions({...cfg,width:W,height:H})}
+function cameraStatus(s){currentCameraState=s.state;$('cameraStatus').dataset.state=s.state;$('cameraStatus').firstElementChild.textContent=s.message;$('cameraDetail').textContent=s.message;$('startCamera').disabled=s.state==='loading';$('welcomeCamera').disabled=s.state==='loading';$('welcomeCamera').firstElementChild.textContent=s.state==='active'?'✓ カメラであそべます':'◎ インカメラをつかう';if(s.state==='fallback'||s.state==='error')announce(s.message)}
+async function startCamera(){await audio.unlock();syncPose();await pose.start();if(dialog.open)pose.suspend()}
+function syncTrack(state){if(!state)return;$('trackName').textContent=state.trackLoaded?state.fileName:'音源はまだ読み込まれていません';$('trackPlay').textContent=state.trackPlaying?'一時停止':'再生';$('synth').checked=state.synthOn}
+function resize(){const oldW=W,oldH=H;W=innerWidth;H=innerHeight;DPR=Math.min(devicePixelRatio||1,1.6);canvas.width=Math.round(W*DPR);canvas.height=Math.round(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);if(oldW&&oldH){for(const list of [ices,seals,crabs,flowers,butterflies,ripples])for(const a of list){a.x*=W/oldW;a.y*=H/oldH}for(const t of targets){t.x=t.nx*W;t.y=t.ny*H}}pointers.clear();posePoints=[];syncPose();makeBackdrop()}
+let backdrop=document.createElement('canvas'),grain=document.createElement('canvas');
+function makeGrain(){grain.width=220;grain.height=220;const g=grain.getContext('2d'),d=g.createImageData(220,220);let seed=1927;for(let i=0;i<d.data.length;i+=4){seed=(seed*1664525+1013904223)>>>0;const n=seed>>>24;d.data[i]=d.data[i+1]=d.data[i+2]=n;d.data[i+3]=12}g.putImageData(d,0,0)}
+function ellipse(g,x,y,rx,ry,color,rotation=0){g.beginPath();g.ellipse(x,y,Math.max(.1,rx),Math.max(.1,ry),rotation,0,TAU);g.fillStyle=color;g.fill()}
+function path(g,points,color){g.beginPath();g.moveTo(...points[0]);for(let i=1;i<points.length;i++)g.lineTo(...points[i]);g.closePath();g.fillStyle=color;g.fill()}
+function curve(g,x1,y1,cx,cy,x2,y2,color,width=1){g.beginPath();g.moveTo(x1,y1);g.quadraticCurveTo(cx,cy,x2,y2);g.strokeStyle=color;g.lineWidth=width;g.stroke()}
+function horizon(g,w,h,stage){const colors=themes[stage],grad=g.createLinearGradient(0,0,0,h);grad.addColorStop(0,colors[0]);grad.addColorStop(.46,colors[1]);grad.addColorStop(.47,colors[2]);grad.addColorStop(1,colors[3]);g.fillStyle=grad;g.fillRect(0,0,w,h);
+ const sunX=w*.78,sunY=h*.26,sz=Math.min(w,h)*.064;let glow=g.createRadialGradient(sunX,sunY,0,sunX,sunY,sz*4);glow.addColorStop(0,stage===1?'#efe7b025':'#fff8d84a');glow.addColorStop(1,'#fff8d800');g.fillStyle=glow;g.fillRect(0,0,w,h*.46);ellipse(g,sunX,sunY,sz,sz,stage===1?'#f7eed3':'#f7f1cc');
+ if(stage===1){ellipse(g,sunX+sz*.35,sunY-sz*.2,sz*.87,sz*.87,'#34465a');for(let i=0;i<50;i++){const x=((i*173.37)%997)/997*w,y=((i*43.91)%251)/251*h*.39;ellipse(g,x,y,i%7===0?1.1:.6,i%7===0?1.1:.6,'#eff1da80')}}
+ for(let layer=0;layer<3;layer++){let pts=[[0,h*.465]];for(let i=0;i<=30;i++){const x=i*w/30,y=h*(.435+layer*.012)-Math.sin(i*.44+layer*1.8)*h*.013-Math.sin(i*.87+layer)*h*.008;pts.push([x,y])}pts.push([w,h*.485],[0,h*.485]);path(g,pts,stage===1?['#4c6670','#395766','#294958'][layer]:stage===2?['#adb7a3','#9dab96','#859f94'][layer]:stage===3?['#b7cbb0','#9dbb9d','#88aa90'][layer]:['#b9cfd0','#a5bfc5','#89aeb9'][layer])}
+ for(let i=0;i<48;i++){const y=h*(.50+i/100),x=((i*157)%1000)/1000*w,len=(8+(i%9)*5)*w/1000;g.fillStyle=stage===1?'#c0d1c315':'#f4f2dc2a';g.fillRect(x,y,len,.7+i/35)}
+ if(stage===0){path(g,[[0,h*.76],[w*.06,h*.77],[w*.1,h*.82],[w*.065,h*.86],[w*.17,h*.95],[w*.12,h],[0,h]],'#dce9e5');path(g,[[w,h*.72],[w*.96,h*.75],[w*.97,h*.81],[w*.9,h*.88],[w*.95,h*.94],[w*.86,h],[w,h]],'#d3e5e2');path(g,[[0,h*.9],[w*.1,h*.94],[w*.07,h],[0,h]],'#eff0dd');path(g,[[w,h*.89],[w*.96,h*.92],[w*.99,h],[w,h]],'#f2f0de')}
+ if(stage===2){path(g,[[0,h*.82],[w*.18,h*.80],[w*.37,h*.88],[w*.67,h*.86],[w,h*.79],[w,h],[0,h]],'#824751');for(let i=0;i<200;i++){const x=(i/200)*w,y=h*(.87+Math.sin(i*2.7)*.055+(i%9)*.008),size=5+(i%7)*2.6;drawCoral(g,x,y,size,i%3)}}
+ if(stage===3){path(g,[[0,h*.83],[w*.15,h*.79],[w*.4,h*.88],[w*.7,h*.82],[w,h*.77],[w,h],[0,h]],'#7caa80');path(g,[[0,h*.93],[w*.3,h*.90],[w*.55,h*.97],[w*.8,h*.89],[w,h*.90],[w,h],[0,h]],'#608e73');for(let i=0;i<150;i++){const x=(i/150)*w,y=h*(.88+Math.sin(i*1.92)*.045+(i%5)*.02);drawPink(g,x,y,2+(i%4),.75)}}
+ const vignette=g.createRadialGradient(w/2,h*.4,h*.25,w/2,h*.45,w*.8);vignette.addColorStop(0,'#143e4800');vignette.addColorStop(1,stage===1?'#081c3d33':'#214f5320');g.fillStyle=vignette;g.fillRect(0,0,w,h);g.save();g.globalAlpha=.4;g.fillStyle=g.createPattern(grain,'repeat');g.fillRect(0,0,w,h);g.restore();
+}
+function makeBackdrop(){backdrop.width=canvas.width;backdrop.height=canvas.height;const g=backdrop.getContext('2d');g.scale(DPR,DPR);horizon(g,W,H,cfg.stage)}
+function drawCoral(g,x,y,s,v){g.strokeStyle=['#b24e5c','#c86b69','#db8b7d'][v];g.lineCap='round';g.lineWidth=Math.max(1,s*.17);for(let j=-1;j<=1;j++){g.beginPath();g.moveTo(x,y);g.lineTo(x+j*s*.35,y-s);g.moveTo(x+j*s*.2,y-s*.55);g.lineTo(x+j*s*.48,y-s*.72);g.stroke()}}
+function drawPink(g,x,y,s,alpha=1){g.save();g.globalAlpha*=alpha;for(let j=0;j<5;j++){const a=j*TAU/5;ellipse(g,x+Math.cos(a)*s*.65,y+Math.sin(a)*s*.65,s*.65,s*.4,j%2?'#df9eaa':'#e9b4c1',a)}ellipse(g,x,y,s*.25,s*.25,'#f6d7ad');g.restore()}
+function drawSunflower(g,x,y,s,alpha=1,tilt=0){g.save();g.globalAlpha*=alpha;g.translate(x,y);g.rotate(tilt);curve(g,0,0,s*.1,s*1.2,-s*.12,s*2.2,'#447967',Math.max(1,s*.08));ellipse(g,s*.24,s*1.25,s*.37,s*.13,'#608f6b',-.45);ellipse(g,-s*.28,s*1.55,s*.4,s*.14,'#477c65',.4);for(let i=0;i<14;i++){let a=i*TAU/14;ellipse(g,Math.cos(a)*s*.65,Math.sin(a)*s*.65,s*.52,s*.19,i%2?'#f2ca68':'#e8b546',a)}ellipse(g,0,0,s*.4,s*.4,'#67533e');ellipse(g,-s*.1,-s*.1,s*.29,s*.25,'#82704a');for(let j=0;j<8;j++){let a=j*2.4,r=s*.25*Math.sqrt(j/8);ellipse(g,Math.cos(a)*r,Math.sin(a)*r,s*.028,s*.028,'#d7ba6a')}g.restore()}
+function makeIce(x,y,edge=false){let r=rand(25,44),points=[];for(let i=0;i<7;i++){let a=i*TAU/7;points.push([Math.cos(a)*r*rand(.8,1.15),Math.sin(a)*r*.48*rand(.8,1.15)])}return{x,y,r,points,vx:edge?x<W*.5?rand(2,5):rand(-5,-2):x<W*.5?rand(-1.8,-.3):rand(.3,1.8),vy:edge?rand(-3,-1):rand(.2,1),angle:rand(-.2,.2),rot:0,glow:0,dead:0}}
+function initScene(){ripples=[];sparks=[];flowers=[];butterflies=[];fireworks=[];shouts=[];nextBloom=0;nextWave=0;globalDance=0;pointers.clear();posePoints=[];const places=[[.10,.71],[.88,.72],[.13,.90],[.83,.90],[.38,.91],[.68,.95],[.035,.48],[.965,.43]];ices=places.map(p=>makeIce(W*p[0],H*p[1]));seals=[{ice:0,type:0},{ice:1,type:2},{ice:4,type:1}].map((s,i)=>({...s,x:ices[s.ice].x,y:ices[s.ice].y-9,joy:0,roll:0,swim:0,cool:0,phase:i*2.1}));crabs=[{nx:.19,ny:.84,type:0},{nx:.76,ny:.86,type:1},{nx:.48,ny:.94,type:0}].map((c,i)=>({...c,x:c.nx*W,y:c.ny*H,joy:0,cool:0,phase:i*2.4}));targets=[[.15,.50],[.86,.49],[.24,.76],[.77,.75]].map((p,i)=>({nx:p[0],ny:p[1],x:p[0]*W,y:p[1]*H,cool:0,color:['#e7c982','#a6d7cf','#dfb9b0','#b6c4e4'][i]}));if(cfg.stage===3){flowers=[{x:W*.11,y:H*.83,size:19,kind:'sun',born:-5},{x:W*.85,y:H*.79,size:23,kind:'sun',born:-5},{x:W*.20,y:H*.94,size:8,kind:'pink',born:-5}]}}
+function setStage(stage){cfg.stage=(stage+4)%4;persist();initScene();makeBackdrop();transition=.6;document.querySelectorAll('[data-stage]').forEach(b=>b.setAttribute('aria-pressed',Number(b.dataset.stage)===cfg.stage));$('stageHint').innerHTML=hints[cfg.stage];$('stageButton').setAttribute('aria-label','次の季節へ：'+names[(cfg.stage+1)%4]);$('stageButton').textContent=['🦭','🎇','🦀','🌻'][cfg.stage];announce(names[cfg.stage]);drawThumbs()}
+function drawIce(g,a,i,t){if(a.dead)return;g.save();g.translate(a.x,a.y);g.rotate(a.angle);ellipse(g,0,10,a.r*1.2,a.r*.28,'#d9f6ed20');path(g,a.points.map(p=>[p[0],p[1]+8]),'#80b9c5');path(g,a.points,'#e8f1e7');path(g,a.points.map(p=>[p[0]*.74,p[1]*.6-1]),'#f5f5e8');g.strokeStyle='#b4d4d2';g.lineWidth=.8;g.beginPath();g.moveTo(-a.r*.5,0);g.lineTo(a.r*.18,3);g.lineTo(a.r*.39,-a.r*.2);g.stroke();if(a.glow>0){g.globalAlpha=a.glow*.6;g.strokeStyle='#fff2b9';g.lineWidth=2;g.beginPath();a.points.forEach((p,j)=>j?g.lineTo(...p):g.moveTo(...p));g.closePath();g.stroke();g.globalAlpha=1}if(i===2||i===3)drawLantern(g,0,-12,Math.min(1,a.r/34),beat);g.restore()}
+function drawLantern(g,x,y,s,b=0){g.save();g.translate(x,y);g.scale(s,s);g.rotate(Math.sin(sceneTime*1.4)*.035+b*.06);const glow=g.createRadialGradient(0,-10,2,0,-10,25+b*9);glow.addColorStop(0,'#f0d39d65');glow.addColorStop(1,'#f0d39d00');g.fillStyle=glow;g.fillRect(-35,-45,70,70);ellipse(g,0,-9,9,12,'#edcf98');g.strokeStyle='#b78b58';g.lineWidth=.8;for(let i=-1;i<=1;i++)curve(g,i*4,-20,i*7,-10,i*4,1,'#c59b65',.7);path(g,[[-5,-22],[5,-22],[6,-19],[-6,-19]],'#607f79');g.fillStyle='#607f79';g.fillRect(-5,2,10,3);g.restore()}
+function drawSeal(g,s,t,scale=1){g.save();g.translate(s.x,s.y);let joy=s.joy,dance=globalDance>0?Math.sin(t*10+s.phase)*.17:beat*.075,roll=joy>0&&s.roll?Math.sin(Math.min(1,joy/2)*Math.PI)*.65:0;g.rotate(dance+roll);g.scale(scale,scale);const col=s.type===1?'#f2efdf':s.type===2?'#4b6870':'#8fa7a6';ellipse(g,0,3,36,20,'#174b5e18');ellipse(g,0,-7,31,19,col,.09);ellipse(g,-20,-1,15,7,col,-.35-(globalDance>0?.7:0));ellipse(g,22,1,14,6,col,.3+(globalDance>0?.7:0));ellipse(g,3,-24,22,21,col);if(s.type===0){for(let i=0;i<13;i++){let a=i*2.4,r=i%3*7;ellipse(g,-9+Math.cos(a)*r,-9+Math.sin(a)*r*.65,2,1.2,'#5e7c7f88',a)}}if(s.type===2){curve(g,-22,-11,-2,2,22,-10,'#d4dbcf',7);curve(g,-15,-29,5,-39,18,-25,'#e2e4d4',4)}ellipse(g,-4,-20,9,7,s.type===1?'#fff9e8':'#c9d3c4');ellipse(g,10,-20,9,7,s.type===1?'#fff9e8':'#c9d3c4');ellipse(g,3,-23,3.2,2.5,'#3b5153');if(joy>.15){curve(g,-10,-29,-7,-32,-4,-29,'#314f53',1.5);curve(g,10,-29,13,-32,16,-29,'#314f53',1.5)}else{ellipse(g,-7,-29,2,2.8,'#233f46');ellipse(g,13,-29,2,2.8,'#233f46');ellipse(g,-7.5,-30, .55,.65,'#fff');ellipse(g,12.5,-30,.55,.65,'#fff')}curve(g,2,-19,4,-15,7,-19,'#536562',1);for(let j=-1;j<=1;j++){curve(g,-6,-21,-15,-22+j*3,-20,-21+j*4,'#455e625f',.7);curve(g,11,-21,21,-22+j*3,25,-21+j*4,'#455e625f',.7)}ellipse(g,-12,-21,4,2,'#d79c8c44');ellipse(g,17,-21,4,2,'#d79c8c44');g.save();g.rotate(-.04);path(g,[[-17,-39],[-13,-44],[22,-42],[24,-36]],'#f3ecd9');for(let j=0;j<7;j++)ellipse(g,-11+j*5,-40+(j%2),1.2,1,'#b96662');path(g,[[20,-39],[30,-47],[28,-37],[34,-34],[24,-33]],'#c8756b');g.restore();g.restore()}
+function drawClione(g,x,y,t){g.save();g.translate(x,y);let a=Math.sin(t*1.2);g.globalAlpha=.48;ellipse(g,0,0,4,13,'#e5f3de');ellipse(g,-8,-3,9,3,'#d7f0e4',-.5+a*.1);ellipse(g,8,-3,9,3,'#d7f0e4',.5-a*.1);ellipse(g,0,-3,2,4,'#db947c');ellipse(g,0,-12,5,4,'#e1f1df');g.restore()}
+function drawEagle(g,t){let x=((t*12+W*.34)%(W+180))-90,y=H*.15+Math.sin(t*.1)*H*.025;g.save();g.translate(x,y);g.scale(.72,.72);const wing=Math.sin(t*.6)*5;path(g,[[-3,0],[-28,-9-wing],[-53,-4-wing],[-34,2],[-17,5],[0,4],[20,5],[35,0],[53,-7-wing],[27,-11-wing],[4,-2]],'#3e5657');path(g,[[-24,-6],[-37,-4],[-25,1],[-14,1]],'#e4e8d9');path(g,[[22,-7],[36,-5],[26,0],[15,0]],'#e4e8d9');ellipse(g,0,0,7,4,'#4d6260');ellipse(g,7,-1,4,3,'#e4e8d9');path(g,[[9,-2],[15,0],[9,1]],'#d3ae68');path(g,[[-6,0],[-16,3],[-11,7],[-3,3]],'#e2e6da');g.restore()}
+function drawCrab(g,c,t){let jump=c.joy>0?Math.abs(Math.sin(c.joy*6))*28:0;g.save();g.translate(c.x,c.y-jump);g.scale(c.type===1?1.1: .88,c.type===1?1.1:.88);let wiggle=Math.sin(t*.8+c.phase)*.1+(c.joy>0?Math.sin(t*10)*.4:0);g.lineCap='round';for(let side of [-1,1]){for(let i=0;i<4;i++){let py=-5+i*7;curve(g,side*21,py,side*(42+i*2),py-10+Math.sin(t*2+i)*(c.joy>0?6:1),side*(49+i*4),py+14,'#a16851',3)}curve(g,side*16,-11,side*31,-29,side*35,-40-wiggle*25,'#ac7054',5);g.save();g.translate(side*35,-42-wiggle*25);g.rotate(side*.4+wiggle);ellipse(g,0,0,10,14,'#c58d63');path(g,[[-2,-1],[-8,-17],[0,-7],[8,-17],[3,2]],'#e2b389');g.restore()}ellipse(g,0,0,c.type===1?30:26,20,c.type===1?'#a86e50':'#bd895e');ellipse(g,-3,-5,23,13,'#ca9b6b');for(let i=0;i<25;i++){let a=i*2.4,r=3+(i%6)*3;ellipse(g,Math.cos(a)*r,Math.sin(a)*r*.6,.9,.9,'#8d624f75')}for(let side of [-1,1]){curve(g,side*8,-14,side*10,-26,side*10,-27,'#8f7055',3);ellipse(g,side*10,-27,3,3.5,'#2e4747');ellipse(g,side*10-1,-28,1,1,'#f2ead1')}if(c.joy>0)curve(g,-5,0,0,7,5,0,'#704c40',1);g.restore()}
+function addRipple(x,y,color='#d8e9df',big=false){ripples.push({x,y,life:0,duration:big?2.3:1.4,r:big?90:42,color});if(ripples.length>25)ripples.shift()}
+function sparkle(x,y,color,count=7){for(let i=0;i<count;i++){let a=rand(0,TAU),v=rand(10,55);sparks.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-10,life:0,duration:rand(.7,1.8),color,r:rand(1,2.6)})}if(sparks.length>180)sparks.splice(0,sparks.length-180)}
+function burst(x,y,color,water=false){const maxRadius=Math.min(W*.17,H*.24,160)*(cfg.gentle?.8:1);x=clamp(x,maxRadius*.8,W-maxRadius*.8);if(x>W*.28&&x<W*.72&&y<H*.62)x=x<W*.5?W*.19:W*.81;fireworks.push({x,y,color,life:0,duration:cfg.gentle?4.2:3.2,radius:maxRadius,water,phase:rand(0,TAU)});if(fireworks.length>5)fireworks.shift();if(cfg.soundEffects)audio.cue(cfg.gentle?'bloom':'firework')}
+function interact(p,dt,force=false){if(paused||dialog.open||!p.active)return;let radius=(p.id==='pointer'?30:43)*cfg.reach;const x=p.x,y=p.y;if(cfg.stage===0){for(const a of ices){if(a.dead)continue;let dx=a.x-x,dy=a.y-y,d=Math.hypot(dx,dy);if(d<a.r+radius){let v=Math.hypot(p.vx,p.vy),strength=clamp(v*.27,25,230);a.vx+=((dx/(d||1))*strength+p.vx*.10)*Math.min(dt*12,1);a.vy+=((dy/(d||1))*strength+p.vy*.10)*Math.min(dt*12,1);a.glow=1;a.rot=clamp(p.vx*.0005,-.3,.3)}}for(const s of seals){if(s.cool>0)continue;if(Math.hypot(s.x-x,s.y-20-y)<radius+34){s.joy=2.7;s.cool=2;s.roll=Math.random()>.4;s.swim=Math.random()>.76?2.8:0;addRipple(s.x,s.y,'#e0f1df',true);sparkle(s.x,s.y-28,'#f4db9f',5);if(cfg.soundEffects)audio.cue('seal')}}}
+ else if(cfg.stage===1){let touched=false;for(const t of targets){if(t.cool<=0&&Math.hypot(t.x-x,t.y-y)<radius+24){t.cool=3.5;burst(t.x,t.y-H*.16,t.color,t.ny>.65);addRipple(t.x,H*.70,t.color,true);touched=true}}if(!touched&&p.speed>420&&sceneTime>nextWave){nextWave=sceneTime+2.8;burst(x,y<H*.5?H*.22:H*.38,['#eed197','#a5d5cf','#dbaebc'][Math.floor(rand(0,3))],true)}}
+ else if(cfg.stage===2){for(const c of crabs){const near=Math.hypot(c.x-x,c.y-15-y)<radius+55,gesture=y>H*.52&&Math.abs(c.x-x)<W*.24;if(c.cool<=0&&(near||gesture)){c.joy=2.8;c.cool=1.2;c.x=clamp(c.x+(x<W/2?26:-26),60,W-60);for(let i=0;i<6;i++)ripples.push({x:c.x+rand(-22,22),y:c.y-rand(5,20),life:-i*.1,duration:1.7,r:rand(4,11),color:'#e2d9b6',bubble:true});if(cfg.soundEffects)audio.cue('crab')}}}
+ else if(sceneTime>nextBloom){nextBloom=sceneTime+.1;const isClear=x>W*.28&&x<W*.72&&y<H*.62;flowers.push({x,y,size:rand(10,22),kind:Math.random()>.4?'sun':'pink',born:sceneTime,fade:isClear?6:30});if(flowers.length>120)flowers.shift();if(butterflies.length<12)butterflies.push({x:x+rand(-15,15),y:y-20,tx:x,ty:y,life:0,phase:rand(0,TAU)});if(force&&cfg.soundEffects)audio.cue('bloom')}
+ if(force){addRipple(x,y,cfg.stage===1?'#c8d9c8':'#f5e5ad');if(cfg.stage===0||cfg.stage===2)sparkle(x,y,'#eee7c1',4)}
+}
+function action(source='button'){if(paused||sceneTime-lastAction<1.1)return;lastAction=sceneTime;audio.unlock();if(cfg.soundEffects)audio.cue('action');globalDance=3.8;const words=['チョイナ！','ハァー 流氷♪','ソレ！'];shouts.push({text:words[Math.floor(rand(0,3))],life:0,duration:2.8,x:W*.5,y:H*.78});addRipple(W*.5,H*.85,'#f1dda4',true);if(cfg.stage===0){for(const s of seals){s.joy=3.5;s.cool=2}sparkle(W*.16,H*.68,'#f2dba1',12);sparkle(W*.85,H*.68,'#f2dba1',12)}else if(cfg.stage===1){burst(W*.2,H*.25,'#f0d396',true);burst(W*.81,H*.30,'#b0d7d0',true)}else if(cfg.stage===2){for(const c of crabs){c.joy=3.5;c.cool=1;addRipple(c.x,c.y,'#e5d2ae',true)}}else{for(let i=0;i<8;i++){let x=W*(i%2?.82:.17)+rand(-45,45),y=H*rand(.66,.9);flowers.push({x,y,size:rand(15,27),kind:i%3?'sun':'pink',born:sceneTime,fade:35})}if(flowers.length>120)flowers.splice(0,flowers.length-120)}announce('チョイナ！ '+names[cfg.stage])}
+function clearFactor(x,y){return pose.cameraReady&&cfg.cameraOpacity>0&&x>W*.28&&x<W*.72&&y>H*.08&&y<H*.62?.25:1}
+function update(dt){if(paused||dialog.open)return;sceneTime+=dt;globalDance=Math.max(0,globalDance-dt);nextWave=Math.max(nextWave,0);if(performance.now()-lastPoseAt<220)for(const p of posePoints)interact(p,dt);for(const p of pointers.values()){if(performance.now()-p.updated>85)p.active=false;if(p.active)interact(p,dt)}
+ if(cfg.stage===0){for(const a of ices){if(a.dead>0){a.dead-=dt;if(a.dead<=0){const side=Math.floor(rand(0,3));Object.assign(a,makeIce(side===0?-50:side===1?W+50:rand(0,W),side===2?H+40:rand(H*.69,H*.95),true));if(side===2){a.vy=-4;a.vx=a.x<W*.5?-1:1}}continue}a.x+=a.vx*dt;a.y+=a.vy*dt;a.angle+=a.rot*dt;a.rot*=Math.pow(.5,dt);a.glow=Math.max(0,a.glow-dt);const f=Math.pow(.68,dt);if(Math.abs(a.vx)>5)a.vx*=f;if(Math.abs(a.vy)>5)a.vy*=f;if(a.x<-a.r*3||a.x>W+a.r*3||a.y<-a.r*3||a.y>H+a.r*3)a.dead=rand(2.5,5);if(a.x>W*.25&&a.x<W*.75&&a.y<H*.64&&a.glow<=0){a.vx+=(a.x<W*.5?-5:5)*dt;a.vy+=5*dt}}
+ for(const s of seals){const a=ices[s.ice];if(s.swim>0){s.swim-=dt;s.x+=dt*24*(s.x<W*.5?-1:1);s.y+=dt*9}else{s.x=lerp(s.x,a.x,Math.min(1,dt*2));s.y=lerp(s.y,a.y-7,Math.min(1,dt*2))}s.joy=Math.max(0,s.joy-dt);s.cool=Math.max(0,s.cool-dt)}}
+ for(const c of crabs){c.joy=Math.max(0,c.joy-dt);c.cool=Math.max(0,c.cool-dt)}for(const t of targets)t.cool=Math.max(0,t.cool-dt);
+ for(const r of ripples){r.life+=dt;if(r.bubble)r.y-=dt*18}ripples=ripples.filter(r=>r.life<r.duration);for(const p of sparks){p.life+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=8*dt}sparks=sparks.filter(p=>p.life<p.duration);for(const f of fireworks)f.life+=dt;fireworks=fireworks.filter(f=>f.life<f.duration);for(const s of shouts)s.life+=dt;shouts=shouts.filter(s=>s.life<s.duration);flowers=flowers.filter(f=>!f.fade||sceneTime-f.born<f.fade);const handsNear=[...(performance.now()-lastPoseAt<220?posePoints:[]),...pointers.values()].filter(p=>p.active&&(p.id==='pointer'||[15,16,19,20].includes(p.id)));for(const b of butterflies){b.life+=dt;const near=handsNear.reduce((best,p)=>!best||Math.hypot(p.x-b.x,p.y-b.y)<Math.hypot(best.x-b.x,best.y-b.y)?p:best,null);if(near){b.tx=near.x;b.ty=near.y-22}const orbit=sceneTime*1.4+b.phase;b.x=lerp(b.x,b.tx+Math.cos(orbit)*21,Math.min(1,dt*2));b.y=lerp(b.y,b.ty+Math.sin(orbit)*15,Math.min(1,dt*2))}butterflies=butterflies.filter(b=>b.life<7);transition=Math.max(0,transition-dt)
+}
+function cameraFrame(){if(!pose.cameraReady||video.readyState<2||cfg.cameraOpacity<=0)return;const vw=video.videoWidth,vh=video.videoHeight;if(!vw||!vh)return;const s=Math.max(W/vw,H/vh),dw=vw*s,dh=vh*s;ctx.save();ctx.globalAlpha=cfg.cameraOpacity;ctx.translate(W,0);ctx.scale(-1,1);ctx.drawImage(video,(W-dw)/2,(H-dh)/2,dw,dh);ctx.restore()}
+function drawFirework(g,f){const p=f.life/f.duration,open=1-Math.pow(1-clamp(p*2,0,1),2.4),alpha=Math.sin(Math.min(1,p*3)*Math.PI/2)*Math.pow(1-p,.7);g.save();g.globalAlpha=alpha*(cfg.gentle?.65:.88);let n=cfg.gentle?32:52;for(let i=0;i<n;i++){let a=i*TAU/n+f.phase,r=f.radius*open*(i%2?.85:1),x=f.x+Math.cos(a)*r,y=f.y+Math.sin(a)*r+p*p*24;curve(g,f.x+Math.cos(a)*r*.42,f.y+Math.sin(a)*r*.42,x,y,x,y,f.color,cfg.gentle?1.1:1.5);ellipse(g,x,y,1.8,1.8,'#fff3d2');if(f.water){const ry=H*.57+(H*.57-y)*.47;g.save();g.globalAlpha*=.35;ellipse(g,x,ry,3,1.4,f.color);g.restore()}}g.restore()}
+function draw(t){ctx.setTransform(DPR,0,0,DPR,0,0);ctx.drawImage(backdrop,0,0,W,H);cameraFrame();const time=sceneTime;ctx.save();
+ if(cfg.stage===0){drawEagle(ctx,time);drawClione(ctx,W*.065,H*.57+Math.sin(time*.5)*5,time);drawClione(ctx,W*.94,H*.60+Math.sin(time*.4)*5,time+2);ices.forEach((a,i)=>drawIce(ctx,a,i,time));for(const s of seals){if(!ices[s.ice].dead||s.swim>0)drawSeal(ctx,s,time,clamp(W/1100,.72,1.2))}}
+ else if(cfg.stage===1){for(const t of targets){if(t.cool>0)continue;let pulse=1+Math.sin(time*1.4+t.x)*.045;ctx.save();ctx.translate(t.x,t.y);ctx.scale(pulse,pulse);const glow=ctx.createRadialGradient(0,0,2,0,0,36);glow.addColorStop(0,t.color+'55');glow.addColorStop(1,t.color+'00');ctx.fillStyle=glow;ctx.fillRect(-38,-38,76,76);ellipse(ctx,0,0,15,15,t.color+'b5');ellipse(ctx,-3,-4,5,5,'#fff4cfb0');for(let i=0;i<8;i++){let a=i*TAU/8;curve(ctx,Math.cos(a)*19,Math.sin(a)*19,Math.cos(a)*22,Math.sin(a)*22,Math.cos(a)*24,Math.sin(a)*24,t.color+'70',1)}ctx.restore()}for(const f of fireworks)drawFirework(ctx,f)}
+ else if(cfg.stage===2){for(const c of crabs)drawCrab(ctx,c,time)}
+ else{for(const f of flowers){const age=sceneTime-f.born,grow=clamp(age/.9,0,1),fade=f.fade?Math.min(1,(f.fade-age)/3):1,alpha=clamp(grow*fade,0,1)*clearFactor(f.x,f.y);if(f.kind==='sun')drawSunflower(ctx,f.x,f.y,f.size*(.3+.7*grow),alpha,Math.sin(time*.5+f.x)*.025);else drawPink(ctx,f.x,f.y,f.size*grow,alpha)}for(const b of butterflies){ctx.save();ctx.globalAlpha=Math.min(1,b.life)*Math.min(1,7-b.life)*clearFactor(b.x,b.y);let wing=Math.abs(Math.sin(time*8+b.phase));ellipse(ctx,b.x-4,b.y,5*wing+1,7,'#fff8de',-.4);ellipse(ctx,b.x+4,b.y,5*wing+1,7,'#fff8de',.4);curve(ctx,b.x,b.y-5,b.x,b.y,b.x,b.y+5,'#a0aa88',.8);ctx.restore()}}
+ for(const r of ripples){if(r.life<0)continue;let p=r.life/r.duration;ctx.save();ctx.globalAlpha=(1-p)*.55*clearFactor(r.x,r.y);ctx.strokeStyle=r.color;ctx.lineWidth=1.2;ctx.beginPath();ctx.ellipse(r.x,r.y,r.bubble?r.r:r.r*(.2+p),r.bubble?r.r:r.r*(.10+p*.3),0,0,TAU);ctx.stroke();ctx.restore()}
+ for(const p of sparks){ctx.save();ctx.globalAlpha=Math.sin((1-p.life/p.duration)*Math.PI)*clearFactor(p.x,p.y);ellipse(ctx,p.x,p.y,p.r,p.r,p.color);ctx.restore()}
+ for(const s of shouts){let p=s.life/s.duration;ctx.save();ctx.globalAlpha=Math.min(1,p*5)*Math.min(1,(1-p)*4)*(cfg.gentle?.8:1);ctx.textAlign='center';ctx.font=`500 ${clamp(W*.032,23,42)}px "Shippori Mincho",serif`;ctx.shadowColor='#143b4766';ctx.shadowBlur=12;ctx.fillStyle=cfg.stage===1?'#f6e9c5':'#ffefd0';ctx.fillText(s.text,s.x,s.y-Math.sin(p*Math.PI)*13);ctx.restore()}
+ if(transition>0){ctx.globalAlpha=transition*.3;ctx.fillStyle='#efe9d5';ctx.fillRect(0,0,W,H)}ctx.restore();
+}
+function frame(now){const dt=Math.min((now-(lastFrame||now))/1000,.05);lastFrame=now;beat=audio.update(now/1000)||0;update(dt);draw(now/1000);requestAnimationFrame(frame)}
+function drawThumbs(){document.querySelectorAll('[data-thumb]').forEach(c=>{const s=Number(c.dataset.thumb),w=320,h=140;c.width=w;c.height=h;const g=c.getContext('2d');horizon(g,w,h,s);if(s===0){const a=makeIce(75,117);a.r=30;a.points=a.points.map(p=>[p[0]*.8,p[1]*.8]);drawIce(g,a,0,0);drawSeal(g,{x:76,y:109,type:1,joy:0,phase:0},0,.62);drawLantern(g,263,121,.72)}else if(s===1){const oldW=W,oldH=H;for(const [x,y,r,col] of [[83,39,26,'#e8cd93'],[244,51,32,'#a5d3c9']]){for(let i=0;i<20;i++){let a=i*TAU/20;curve(g,x+Math.cos(a)*r*.35,y+Math.sin(a)*r*.35,x+Math.cos(a)*r,y+Math.sin(a)*r,x+Math.cos(a)*r,y+Math.sin(a)*r,col,.7)}}}else if(s===2){g.save();g.translate(150,94);g.scale(.55,.55);drawCrab(g,{x:0,y:0,type:0,joy:0,phase:0},0);g.restore()}else{drawSunflower(g,56,98,19);drawSunflower(g,254,110,24);drawPink(g,100,123,8)}})}
+function openPanel(){previousFocus=document.activeElement;pointers.clear();posePoints=[];pose.suspend();if(!dialog.open)dialog.showModal();$('playControls').inert=true;syncTrack(audio.state);setTimeout(()=>$('tab-'+activeTab).focus(),0)}
+function closePanel(){if(!dialog.open)return;dialog.close();$('playControls').inert=false;pointers.clear();posePoints=[];if(!paused)pose.resume();audio.unlock();canvas.focus({preventScroll:true})}
+let activeTab='play';function tab(name,focus=false){activeTab=name;document.querySelectorAll('[data-tab]').forEach(b=>{const on=b.dataset.tab===name;b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1;$('pane-'+b.dataset.tab).hidden=!on;if(on&&focus)b.focus()})}
+document.querySelectorAll('[data-tab]').forEach(b=>{b.addEventListener('click',()=>tab(b.dataset.tab));b.addEventListener('keydown',e=>{const tabs=['play','body','sound','guide'],i=tabs.indexOf(activeTab);if(['ArrowRight','ArrowLeft','Home','End'].includes(e.key)){e.preventDefault();tab(e.key==='Home'?tabs[0]:e.key==='End'?tabs[3]:tabs[(i+(e.key==='ArrowRight'?1:3))%4],true)}})});
+$('settingsButton').onclick=openPanel;$('closePanel').onclick=closePanel;$('returnPlay').onclick=closePanel;dialog.addEventListener('cancel',e=>{e.preventDefault();closePanel()});dialog.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const items=[...dialog.querySelectorAll('button:not(:disabled),input:not(:disabled),select,summary')].filter(x=>x.getClientRects().length&&x.tabIndex>=0),first=items[0],last=items[items.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}});
+$('actionButton').onclick=()=>{action();canvas.focus({preventScroll:true})};$('stageButton').onclick=()=>{audio.unlock();setStage(cfg.stage+1);canvas.focus({preventScroll:true})};document.querySelectorAll('[data-stage]').forEach(b=>b.onclick=()=>setStage(Number(b.dataset.stage)));
+$('welcomeCamera').onclick=startCamera;$('startCamera').onclick=startCamera;$('stopCamera').onclick=()=>{pose.stop();posePoints=[]};
+for(const key of ['hands','head','feet','motion','gentle','soundEffects']){$(key).checked=cfg[key];$(key).addEventListener('change',e=>{cfg[key]=e.target.checked;persist();syncPose();if(key==='gentle')audio.setGentle(cfg.gentle)})}
+for(const key of ['reach','cameraOpacity','sensitivity','volume']){$(key).value=String(cfg[key]);$(key).addEventListener('input',e=>{cfg[key]=Number(e.target.value);persist();syncPose();if(key==='volume'){audio.setVolume(cfg.volume);$('volumeValue').value=Math.round(cfg.volume*100)+'%'}if(key==='sensitivity')$('sensitivityValue').value=cfg.sensitivity>1.3?'高め':cfg.sensitivity<.8?'低め':'標準'})}
+document.querySelectorAll('.row').forEach(row=>row.addEventListener('click',e=>{if(e.target.closest('input,label'))return;const input=row.querySelector('input[type=checkbox]');if(input){input.checked=!input.checked;input.dispatchEvent(new Event('change',{bubbles:true}))}}));
+$('volumeValue').value=Math.round(cfg.volume*100)+'%';$('sensitivityValue').value=cfg.sensitivity>1.3?'高め':cfg.sensitivity<.8?'低め':'標準';$('paused').onchange=e=>{paused=e.target.checked;posePoints=[];pointers.clear();if(paused)pose.suspend();else if(!dialog.open)pose.resume()};
+$('synth').onchange=async e=>{try{await audio.setSynth(e.target.checked);syncTrack(audio.state)}catch{$('audioStatus').textContent='音を開始できませんでした。もう一度操作してください。';e.target.checked=false}};
+$('audioFile').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{await audio.loadFile(file);syncTrack(audio.state)}catch{$('audioStatus').textContent='音源を読み込めませんでした。MP3やWAVなど、対応するファイルでお試しください。'}e.target.value=''};
+$('trackPlay').onclick=async()=>{try{if(audio.state.trackPlaying)audio.pauseTrack();else await audio.playTrack();syncTrack(audio.state)}catch{$('audioStatus').textContent='再生できませんでした。音源を選び直してください。'}};$('trackClear').onclick=()=>{audio.clearTrack();syncTrack(audio.state)};$('testSound').onclick=async()=>{await audio.unlock();audio.cue('action')};
+$('fullscreen').onclick=async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch{$('fullscreen').textContent='この端末では、Safariの表示設定をご利用ください'}};
+function position(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height}}
+canvas.addEventListener('pointerdown',e=>{if(dialog.open||paused)return;e.preventDefault();audio.unlock();canvas.setPointerCapture(e.pointerId);const p={...position(e),id:'pointer',vx:0,vy:0,speed:0,active:true,updated:performance.now(),start:position(e),moved:0};pointers.set(e.pointerId,p);interact(p,1/30,true)});
+canvas.addEventListener('pointermove',e=>{const p=pointers.get(e.pointerId);if(!p||paused||dialog.open)return;e.preventDefault();const pos=position(e),now=performance.now(),dt=Math.max((now-p.updated)/1000,.012);p.vx=clamp((pos.x-p.x)/dt,-1500,1500);p.vy=clamp((pos.y-p.y)/dt,-1500,1500);p.speed=Math.hypot(p.vx,p.vy);p.moved+=Math.hypot(pos.x-p.x,pos.y-p.y);Object.assign(p,pos,{updated:now,active:p.speed>8})});
+function pointerEnd(e){const p=pointers.get(e.pointerId);if(!p)return;if(e.type==='pointerup'&&p.moved<25){const now=performance.now();if(lastTap&&now-lastTap.time<340&&Math.hypot(p.x-lastTap.x,p.y-lastTap.y)<65){action('doubletap');lastTap=null}else lastTap={time:now,x:p.x,y:p.y}}pointers.delete(e.pointerId)}canvas.addEventListener('pointerup',pointerEnd);canvas.addEventListener('pointercancel',pointerEnd);canvas.addEventListener('lostpointercapture',e=>pointers.delete(e.pointerId));
+addEventListener('keydown',e=>{if(dialog.open)return;if(e.code==='Space'||e.key==='Enter'){if(e.repeat)return;const isButton=e.target.closest?.('button,input,select,textarea,a');if(isButton)return;e.preventDefault();action('switch')}});
+addEventListener('blur',()=>{pointers.clear();posePoints=[]});document.addEventListener('visibilitychange',()=>{pointers.clear();posePoints=[];lastFrame=0;if(document.hidden)pose.suspend();else if(!dialog.open&&!paused)pose.resume()});addEventListener('resize',resize);addEventListener('pagehide',()=>pose.stop());
+makeGrain();resize();setStage(cfg.stage);requestAnimationFrame(frame);openPanel();
+// Read-only diagnostics for classroom setup and automated verification.
+window.NatureApp={get state(){return{stage:cfg.stage,cameraReady:pose.cameraReady,posePoints:posePoints.length,settings:{...cfg},camera:currentCameraState,modal:dialog.open,paused,ice:ices.map(a=>({x:a.x,y:a.y,r:a.r,dead:a.dead})),flowers:flowers.length,fireworks:fireworks.length,seals:seals.map(s=>({joy:s.joy})),time:sceneTime}}};
+})();
+</script>
+</body>
+</html>
